@@ -12,9 +12,21 @@
             --tb-header: #2c3e50;
             --tb-accent: #3498db;
             --tb-success: #27ae60;
-            --tb-warning: #f39c12;
             --tb-danger: #e74c3c;
             --tb-muted: #95a5a6;
+            /* Sticky column widths */
+            --col-a: 60px;
+            --col-b: 220px;
+            --col-c: 75px;
+            --col-extra: 65px;
+            /* Computed left offsets */
+            --left-a: 0px;
+            --left-b: var(--col-a);
+            --left-c: calc(var(--col-a) + var(--col-b));
+            /* Computed right offsets */
+            --right-k: 0px;
+            --right-j: var(--col-extra);
+            --right-i: calc(var(--col-extra) * 2);
         }
 
         body {
@@ -52,46 +64,91 @@
         .project-bar .meta { color: var(--tb-muted); }
         .project-bar .meta strong { color: #2c3e50; }
 
-        .content { padding: 12px 16px; }
+        .content { padding: 12px 0 12px 0; }
 
         .info-banner {
             font-size: 11px;
             background: #eaf2f8;
             border-left: 3px solid var(--tb-accent);
             padding: 5px 12px;
-            margin-bottom: 10px;
+            margin: 0 16px 10px 16px;
             color: #2c3e50;
         }
 
-        /* --- Single unified table --- */
-        .sheet {
-            border-collapse: collapse;
-            width: 100%;
-            background: white;
-            font-size: 12px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-            table-layout: fixed;
+        /* --- Scroll container --- */
+        .sheet-wrapper {
+            overflow-x: auto;
+            position: relative;
+            margin: 0;
         }
 
-        .sheet col.col-meta   { width: 60px; }
-        .sheet col.col-label  { width: 200px; }
-        .sheet col.col-impact { width: 75px; }
-        .sheet col.col-ref    { width: 90px; }
-        .sheet col.col-extra  { width: 65px; }
+        /* --- Table --- */
+        .sheet {
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 100%;
+            font-size: 12px;
+            white-space: nowrap;
+        }
 
         .sheet th, .sheet td {
-            border: 1px solid #d5d8dc;
+            border-right: 1px solid #d5d8dc;
+            border-bottom: 1px solid #d5d8dc;
             padding: 3px 6px;
             vertical-align: middle;
+            background: white;
+            box-sizing: border-box;
         }
 
-        /* Column header row (PF1-1, PF1-2...) — sticky */
-        .sheet thead {
+        /* ---- Column sizing ---- */
+        .sheet .col-a { width: var(--col-a);  min-width: var(--col-a); max-width: var(--col-a); }
+        .sheet .col-b { width: var(--col-b);  min-width: var(--col-b); max-width: var(--col-b);
+                        white-space: normal; overflow: hidden; text-overflow: ellipsis; }
+        .sheet .col-c { width: var(--col-c);  min-width: var(--col-c); max-width: var(--col-c); }
+        .sheet .col-ref { width: 90px; min-width: 90px; }
+        .sheet .col-extra { width: var(--col-extra); min-width: var(--col-extra); max-width: var(--col-extra); }
+
+        /* ---- Sticky LEFT columns (A, B, C) ---- */
+        .sheet .stick-a {
+            position: sticky;
+            left: var(--left-a);
+            z-index: 3;
+        }
+        .sheet .stick-b {
+            position: sticky;
+            left: var(--left-b);
+            z-index: 3;
+        }
+        .sheet .stick-c {
+            position: sticky;
+            left: var(--left-c);
+            z-index: 3;
+            border-right: 2px solid #95a5a6;
+        }
+
+        /* ---- Sticky RIGHT columns (I, J, K) ---- */
+        .sheet .stick-i {
+            position: sticky;
+            right: var(--right-i);
+            z-index: 3;
+            border-left: 2px solid #95a5a6;
+        }
+        .sheet .stick-j {
+            position: sticky;
+            right: var(--right-j);
+            z-index: 3;
+        }
+        .sheet .stick-k {
+            position: sticky;
+            right: var(--right-k);
+            z-index: 3;
+        }
+
+        /* Header row: sticky top + left/right = z-index bump */
+        .sheet thead th {
             position: sticky;
             top: 0;
-            z-index: 10;
-        }
-        .sheet thead th {
+            z-index: 5;
             background: #34495e;
             color: white;
             font-weight: 600;
@@ -99,29 +156,35 @@
             font-size: 11px;
             padding: 6px 4px;
         }
+        .sheet thead th.stick-a,
+        .sheet thead th.stick-b,
+        .sheet thead th.stick-c,
+        .sheet thead th.stick-i,
+        .sheet thead th.stick-j,
+        .sheet thead th.stick-k {
+            z-index: 8;
+        }
 
-        /* Section header rows */
+        /* ---- Section rows ---- */
         .section-row td {
-            background: #2c3e50;
+            background: #2c3e50 !important;
             color: white;
             font-weight: 700;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             padding: 5px 8px;
-            border-color: #2c3e50;
         }
 
-        /* Sub-section header rows */
         .subsection-row td {
-            background: #ecf0f1;
+            background: #ecf0f1 !important;
             font-weight: 600;
             color: #2c3e50;
             font-size: 11px;
             padding: 4px 8px;
         }
 
-        /* Numeric cells */
+        /* ---- Numeric cells ---- */
         .sheet td.num {
             text-align: right;
             font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
@@ -129,23 +192,19 @@
         }
 
         /* Totals */
-        .total-row td { background: #d4e6f1; font-weight: 700; border-top: 2px solid #3498db; }
-        .total-row td.num { font-size: 12px; }
+        .total-row td { background: #d4e6f1 !important; font-weight: 700; border-top: 2px solid #3498db; }
 
         /* Delta */
-        .delta-row td { background: #fef9e7; font-style: italic; }
+        .delta-row td { background: #fef9e7 !important; font-style: italic; }
         .num.positive { color: var(--tb-danger); }
         .num.negative { color: var(--tb-success); }
         .num.zero { color: var(--tb-muted); }
 
-        /* Editable cells */
-        .editable {
-            background: #fffde7 !important;
-            cursor: pointer;
-        }
+        /* Editable */
+        .editable { background: #fffde7 !important; cursor: pointer; }
         .editable:hover { background: #fff9c4 !important; }
         .editable input {
-            width: 100%;
+            width: 72px;
             border: 1px solid var(--tb-accent);
             border-radius: 2px;
             padding: 1px 4px;
@@ -153,60 +212,45 @@
             font-size: 12px;
             text-align: right;
             background: white;
-            box-sizing: border-box;
         }
 
-        /* Matrix checkbox cells */
-        .matrix-cell {
-            text-align: center !important;
-            padding: 2px !important;
-        }
+        /* Matrix checkbox */
+        .matrix-cell { text-align: center !important; padding: 2px !important; }
         .matrix-cell input[type="checkbox"] { transform: scale(1.1); cursor: pointer; }
 
         /* Status select */
         select.status-select {
-            font-size: 10px;
-            padding: 1px 2px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            cursor: pointer;
-            background: white;
-            width: 100%;
+            font-size: 10px; padding: 1px 2px; border: 1px solid #ccc;
+            border-radius: 3px; cursor: pointer; background: white; width: 100%;
         }
-        select.status-select.st-validated { background: #d5f5e3; color: #1e8449; font-weight:600; }
-        select.status-select.st-open { background: #fdebd0; color: #d68910; font-weight:600; }
-        select.status-select.st-canceled { background: #eaecee; color: #7f8c8d; }
+        select.st-validated { background: #d5f5e3; color: #1e8449; font-weight: 600; }
+        select.st-open { background: #fdebd0; color: #d68910; font-weight: 600; }
+        select.st-canceled { background: #eaecee; color: #7f8c8d; }
 
-        /* Modification rows */
         .modif-row.canceled { opacity: 0.45; }
 
-        /* Projection */
+        /* Projection rows */
         .drop-row td { background: #fdedec !important; border-top: 2px solid var(--tb-danger); }
         .drop-row td.num { color: var(--tb-danger); font-weight: 600; }
-        .prod-row td { background: #eafaf1; }
+        .prod-row td { background: #eafaf1 !important; }
         .stable-row td { color: var(--tb-muted); }
-        .ellipsis-row td { text-align: center; color: #bbb; padding: 2px; border: none; background: var(--tb-bg); }
+        .ellipsis-row td {
+            text-align: center; color: #bbb; padding: 2px;
+            border-right: none; background: var(--tb-bg) !important;
+        }
 
-        /* Muted info rows */
         .ref-row td { color: #95a5a6; font-size: 11px; }
 
-        /* Flash animation */
-        @keyframes flash { 0% { background: #aed6f1; } 100% { } }
+        /* Shadow hint on sticky borders when scrolled */
+        .sheet .stick-c { box-shadow: 2px 0 4px rgba(0,0,0,0.06); }
+        .sheet .stick-i { box-shadow: -2px 0 4px rgba(0,0,0,0.06); }
+
+        @keyframes flash { 0% { background: #aed6f1 !important; } 100% { } }
         .flash-update { animation: flash 0.6s ease-out; }
 
-        .htmx-indicator {
-            display: none;
-            font-size: 11px;
-            color: var(--tb-accent);
-            margin-left: 8px;
-        }
-        .htmx-indicator.show { display: inline; }
-
-        .buttons-bar {
-            margin-left: auto;
-            display: flex;
-            gap: 6px;
-        }
+        .htmx-indicator { display:none; font-size:11px; color:var(--tb-accent); margin-left:8px; }
+        .htmx-indicator.show { display:inline; }
+        .buttons-bar { margin-left:auto; display:flex; gap:6px; }
     </style>
 </head>
 <body>
@@ -225,7 +269,6 @@
     </div>
 </div>
 
-<!-- Project bar -->
 <div class="project-bar">
     <span class="project-name">MyProject X82</span>
     <span class="meta">Client : <strong>Renault / GM</strong></span>
@@ -235,55 +278,31 @@
 </div>
 
 <div class="content">
-
     <div class="info-banner">
-        Cellules jaunes = éditables. Changez un statut, cochez la matrice, modifiez un prix → recalcul instantané.
+        Cellules jaunes = éditables. Les colonnes PF scrollent horizontalement, les colonnes fixes restent en place.
         <span class="htmx-indicator" id="recalc-indicator">Recalcul...</span>
     </div>
 
-    <div style="overflow-x:auto;">
+    <div class="sheet-wrapper">
     <table class="sheet" id="main-sheet">
-        <colgroup>
-            <col class="col-meta">   <!-- A: status / year label -->
-            <col class="col-label">  <!-- B: description -->
-            <col class="col-impact"> <!-- C: impact / delta -->
-            <col class="col-ref">    <!-- D: PF1-1 -->
-            <col class="col-ref">    <!-- E: PF1-2 -->
-            <col class="col-ref">    <!-- F: PF1-3 -->
-            <col class="col-ref">    <!-- G: PF1-4 -->
-            <col class="col-ref">    <!-- H: PF1-5 -->
-            <col class="col-extra">  <!-- I: Part Price -->
-            <col class="col-extra">  <!-- J: TEF -->
-            <col class="col-extra">  <!-- K: Tooling -->
-        </colgroup>
-
-        <!-- ===== COLUMN HEADERS ===== -->
         <thead>
             <tr>
-                <th></th>
-                <th style="text-align:left;">MyProject — PF1</th>
-                <th></th>
-                <th>PF1-1</th>
-                <th>PF1-2</th>
-                <th>PF1-3</th>
-                <th>PF1-4</th>
-                <th>PF1-5</th>
-                <th>Part Price</th>
-                <th>TEF</th>
-                <th>Tooling</th>
+                <th class="col-a stick-a"></th>
+                <th class="col-b stick-b" style="text-align:left;">MyProject — PF1</th>
+                <th class="col-c stick-c"></th>
+                <!-- PF columns: generated by JS -->
+                <th class="col-extra stick-i">Part Price</th>
+                <th class="col-extra stick-j">TEF</th>
+                <th class="col-extra stick-k">Tooling</th>
             </tr>
         </thead>
-
-        <tbody id="sheet-body">
-            <!-- Generated by JS -->
-        </tbody>
+        <tbody id="sheet-body"></tbody>
     </table>
     </div>
 
-    <div style="margin-top:20px; padding:10px; background:#f5f5f5; border-radius:4px; font-size:11px; color:#7f8c8d;">
-        <strong>Maquette HTMX</strong> — En production, chaque interaction déclenche
-        <code>hx-patch</code> → recalcul serveur → <code>hx-swap</code> du <code>&lt;tbody&gt;</code>.
-        Les colonnes PF1-n restent alignées de haut en bas, comme sur Excel.
+    <div style="margin-top:20px; padding:10px 16px; background:#f5f5f5; border-radius:4px; font-size:11px; color:#7f8c8d;">
+        <strong>Maquette</strong> — Les 3 colonnes de gauche et 3 de droite sont fixes (<code>position:sticky</code>).
+        Les colonnes PF scrollent horizontalement. En production : <code>hx-patch</code> → recalcul serveur → <code>hx-swap</code>.
     </div>
 </div>
 
@@ -291,125 +310,145 @@
 // ============================================================
 // DATA
 // ============================================================
-const REFS = ['PF1-1','PF1-2','PF1-3','PF1-4','PF1-5'];
+// 12 refs to demonstrate horizontal scroll
+const REFS = ['PF1-1','PF1-2','PF1-3','PF1-4','PF1-5','PF1-6','PF1-7','PF1-8','PF1-9','PF1-10','PF1-11','PF1-12'];
 const N = REFS.length;
 
 const initial = {
-    base: [10, 12, 14, 20, 25],
-    rd:   [4.5, 4.5, 4.5, 4.5, 4.5],
-    pkg:  [0.5, 0.5, 0.5, 0.5, 0.5],
+    base: [10, 12, 14, 20, 25,  11, 13, 15, 21, 26,  18, 22],
+    rd:   [4.5,4.5,4.5,4.5,4.5, 4.5,4.5,4.5,4.5,4.5, 4.5,4.5],
+    pkg:  [0.5,0.5,0.5,0.5,0.5, 0.5,0.5,0.5,0.5,0.5, 0.5,0.5],
 };
 
 const clientRefs = {
-    renault: ['123456789','123456790','123456791','123456792','123456793'],
-    gm:      ['987654321','987654320','987654319','987654318','987654317'],
+    renault: REFS.map((_,i) => String(123456789 + i)),
+    gm:      REFS.map((_,i) => String(987654321 - i)),
 };
 
 const mods = [
-    { id:'F004', desc:'Nouvelle définition déco part volant',  status:'Canceled',  pp:1.79,  tef:0.10, tooling:46000, mx:[0,1,1,1,1] },
-    { id:'F005', desc:'Nouvelles zones d\'arrêt cuir',         status:'Validated', pp:-1.20, tef:0,    tooling:7500,  mx:[0,0,0,1,1] },
-    { id:'F012', desc:'MAJ poids matières (PU)',                status:'Validated', pp:0.32,  tef:0,    tooling:4000,  mx:[1,1,1,0,0] },
-    { id:'F012b',desc:'MAJ poids matières (Cuir)',              status:'Validated', pp:0.48,  tef:0,    tooling:0,     mx:[0,0,0,1,1] },
-    { id:'F015', desc:'Modification coque arrière',             status:'Validated', pp:0.03,  tef:0.09, tooling:61000, mx:[1,1,1,1,1] },
-    { id:'F017', desc:'Mise à jour du prix des switches',       status:'Open',      pp:0.477, tef:0,    tooling:0,     mx:[0,1,0,1,0] },
-    { id:'F018', desc:'Changement couture volants cuir',        status:'Open',      pp:0.045, tef:0.48, tooling:0,     mx:[0,0,0,1,1] },
+    { id:'F004', desc:'Nouvelle définition déco part volant',  status:'Canceled',  pp:1.79,  tef:0.10, tooling:46000,
+      mx:[0,1,1,1,1, 0,1,1,1,1, 0,0] },
+    { id:'F005', desc:'Nouvelles zones d\'arrêt cuir',         status:'Validated', pp:-1.20, tef:0,    tooling:7500,
+      mx:[0,0,0,1,1, 0,0,0,1,1, 1,1] },
+    { id:'F012', desc:'MAJ poids matières (PU)',                status:'Validated', pp:0.32,  tef:0,    tooling:4000,
+      mx:[1,1,1,0,0, 1,1,1,0,0, 0,0] },
+    { id:'F012b',desc:'MAJ poids matières (Cuir)',              status:'Validated', pp:0.48,  tef:0,    tooling:0,
+      mx:[0,0,0,1,1, 0,0,0,1,1, 1,1] },
+    { id:'F015', desc:'Modification coque arrière',             status:'Validated', pp:0.03,  tef:0.09, tooling:61000,
+      mx:[1,1,1,1,1, 1,1,1,1,1, 1,1] },
+    { id:'F017', desc:'Mise à jour du prix des switches',       status:'Open',      pp:0.477, tef:0,    tooling:0,
+      mx:[0,1,0,1,0, 0,1,0,1,0, 0,0] },
+    { id:'F018', desc:'Changement couture volants cuir',        status:'Open',      pp:0.045, tef:0.48, tooling:0,
+      mx:[0,0,0,1,1, 0,0,0,1,1, 0,0] },
 ];
 
 const PROD = { rate: -0.01, years: 4 };
-const RD_DROP_YEAR = 7;
+const RD_DROP = 7;
 const SOP_YEAR = 2014;
 
 // ============================================================
-// RENDER FULL SHEET
+// UPDATE HEADER PF COLUMNS
+// ============================================================
+function renderHeader() {
+    const thead = document.querySelector('.sheet thead tr');
+    // Remove old PF th's (keep first 3 + last 3)
+    while (thead.children.length > 6) {
+        thead.removeChild(thead.children[3]);
+    }
+    const beforeEl = thead.querySelector('.stick-i');
+    REFS.forEach(r => {
+        const th = document.createElement('th');
+        th.className = 'col-ref';
+        th.textContent = r;
+        thead.insertBefore(th, beforeEl);
+    });
+}
+
+// ============================================================
+// RENDER
 // ============================================================
 function render() {
     const upd = recalc();
     let h = '';
 
-    // ---- SECTION: CONTRAT INITIAL ----
-    h += sectionRow('Contrat Initial (F1)');
-    h += refInfoRow('Réf. Renault', clientRefs.renault);
-    h += refInfoRow('Réf. GM', clientRefs.gm);
-    h += editableRow('Prix de base', 'base', initial.base);
-    h += editableRow('Amort. R&D <span style="font-size:10px;color:#7f8c8d;">(6750K€ / 5 ans / 1500Kp)</span>', 'rd', initial.rd);
-    h += editableRow('Packaging', 'pkg', initial.pkg);
-    h += totalRow('Prix SOP Initial', upd.sopInit);
+    // ---- CONTRAT INITIAL ----
+    h += secRow('Contrat Initial (F1)');
+    h += refRow('Réf. Renault', clientRefs.renault);
+    h += refRow('Réf. GM', clientRefs.gm);
+    h += editRow('Prix de base', 'base', initial.base);
+    h += editRow('Amort. R&D', 'rd', initial.rd);
+    h += editRow('Packaging', 'pkg', initial.pkg);
+    h += totRow('Prix SOP Initial', upd.sopInit);
 
-    // ---- SECTION: MODIFICATIONS ----
-    h += sectionRow('Fiches de Modification (F4)');
-    h += subsectionRow('Statut', 'Modification', 'Impact global', 'Matrice d\'application', 'Part Price', 'TEF', 'Tooling');
+    // ---- MODIFICATIONS ----
+    h += secRow('Fiches de Modification (F4)');
+    h += subRow('Statut', 'Modification', 'Impact', REFS, 'PP', 'TEF', 'Tooling');
 
     mods.forEach((m, i) => {
         const canceled = m.status === 'Canceled';
         const cls = canceled ? 'modif-row canceled' : 'modif-row';
-        const stCls = m.status === 'Validated' ? 'st-validated' : m.status === 'Open' ? 'st-open' : 'st-canceled';
+        const stCls = m.status==='Validated'?'st-validated':m.status==='Open'?'st-open':'st-canceled';
         const impact = m.pp + m.tef;
 
         h += `<tr class="${cls}">`;
-        h += `<td><select class="status-select ${stCls}" onchange="chgStatus(${i},this.value)">
+        h += `<td class="col-a stick-a"><select class="status-select ${stCls}" onchange="chgSt(${i},this.value)">
                 <option value="Open" ${m.status==='Open'?'selected':''}>Open</option>
                 <option value="Validated" ${m.status==='Validated'?'selected':''}>Validated</option>
                 <option value="Canceled" ${m.status==='Canceled'?'selected':''}>Canceled</option>
               </select></td>`;
-        h += `<td><strong>${m.id}</strong> — ${m.desc}</td>`;
-        h += `<td class="num" style="font-weight:600;">${fmt(impact)}</td>`;
+        h += `<td class="col-b stick-b"><strong>${m.id}</strong> — ${m.desc}</td>`;
+        h += `<td class="col-c stick-c num" style="font-weight:600;">${fmt(impact)}</td>`;
         for (let r = 0; r < N; r++) {
-            h += `<td class="matrix-cell"><input type="checkbox" ${m.mx[r]?'checked':''} onchange="chgMatrix(${i},${r},this.checked)"></td>`;
+            h += `<td class="col-ref matrix-cell"><input type="checkbox" ${m.mx[r]?'checked':''} onchange="chgMx(${i},${r},this.checked)"></td>`;
         }
-        h += `<td class="num">${fmt(m.pp)}</td>`;
-        h += `<td class="num">${m.tef ? fmt(m.tef) : ''}</td>`;
-        h += `<td class="num" style="color:#7f8c8d;">${m.tooling ? m.tooling.toLocaleString('fr-FR') : ''}</td>`;
+        h += `<td class="col-extra stick-i num">${fmt(m.pp)}</td>`;
+        h += `<td class="col-extra stick-j num">${m.tef?fmt(m.tef):''}</td>`;
+        h += `<td class="col-extra stick-k num" style="color:#7f8c8d;">${m.tooling?m.tooling.toLocaleString('fr-FR'):''}</td>`;
         h += `</tr>`;
     });
 
-    // ---- SECTION: UPDATED PRICES ----
-    h += sectionRow('Prix SOP Actualisés');
-    h += dataRow('Prix de base actualisé', upd.base);
-    h += dataRow('Amort. R&D actualisé', upd.rd);
-    h += dataRow('Packaging', upd.pkg);
-    h += totalRow('Prix SOP Actualisé', upd.sopUpd, 'sop-upd');
-    h += deltaRow('Écart vs LOI', upd.delta);
+    // ---- PRIX ACTUALISÉS ----
+    h += secRow('Prix SOP Actualisés');
+    h += datRow('Prix de base actualisé', upd.base);
+    h += datRow('Amort. R&D actualisé', upd.rd);
+    h += datRow('Packaging', upd.pkg);
+    h += totRow('Prix SOP Actualisé', upd.sopUpd);
+    h += dltRow('Écart vs LOI', upd.delta);
 
-    // ---- SECTION: PROJECTION ----
-    h += sectionRow(`Projection Annuelle — Productivité ${PROD.rate*100}%/an × ${PROD.years} ans`);
-    h += projHeaderRow();
+    // ---- PROJECTION ----
+    h += secRow(`Projection — Productivité ${PROD.rate*100}%/an × ${PROD.years} ans`);
+    h += subRow('Année', 'Événement', '', REFS, '', '', '');
 
-    let prices = [...upd.sopUpd];
-    h += projDataRow('SOP', SOP_YEAR, '', prices);
+    let pr = [...upd.sopUpd];
+    h += prjRow('SOP', SOP_YEAR, '', pr);
 
     for (let y = 1; y <= 10; y++) {
         const yr = SOP_YEAR + y;
-        let evt = '';
-        let rowCls = 'stable-row';
+        let evt = '', cls = 'stable-row';
 
         if (y <= PROD.years) {
-            // RULE 3
-            prices = prices.map((p, i) => {
+            pr = pr.map((p,i) => {
                 const nu = p - upd.rd[i] - upd.pkg[i];
-                return nu * (1 + PROD.rate) + upd.rd[i] + upd.pkg[i];
+                return nu*(1+PROD.rate) + upd.rd[i] + upd.pkg[i];
             });
             evt = `Productivité ${(PROD.rate*100).toFixed(0)}%`;
-            rowCls = 'prod-row';
+            cls = 'prod-row';
         }
-
-        if (y === RD_DROP_YEAR) {
-            // RULE 4
-            prices = prices.map((p, i) => p - upd.rd[i]);
+        if (y === RD_DROP) {
+            pr = pr.map((p,i) => p - upd.rd[i]);
             evt = 'Tombée des rondelles R&D';
-            rowCls = 'drop-row';
+            cls = 'drop-row';
         }
 
         if (y <= PROD.years) {
-            h += projDataRow(`SOP+${y}`, yr, evt, prices, rowCls);
-        } else if (y === PROD.years + 1) {
-            h += projDataRow(`SOP+${y}`, yr, 'Prix stable', prices, 'stable-row');
-            if (RD_DROP_YEAR > PROD.years + 2) {
-                h += `<tr class="ellipsis-row"><td colspan="11">· · ·</td></tr>`;
-            }
-        } else if (y === RD_DROP_YEAR) {
-            h += projDataRow(`SOP+${y}`, yr, evt, prices, rowCls);
-        } else if (y === RD_DROP_YEAR + 1) {
-            h += projDataRow(`SOP+${y}`, yr, 'Prix stable (sans rondelles)', prices, 'stable-row');
+            h += prjRow(`SOP+${y}`, yr, evt, pr, cls);
+        } else if (y === PROD.years+1) {
+            h += prjRow(`SOP+${y}`, yr, 'Prix stable', pr, 'stable-row');
+            if (RD_DROP > PROD.years+2) h += ellRow();
+        } else if (y === RD_DROP) {
+            h += prjRow(`SOP+${y}`, yr, evt, pr, cls);
+        } else if (y === RD_DROP+1) {
+            h += prjRow(`SOP+${y}`, yr, 'Prix stable (sans rondelles)', pr, 'stable-row');
         }
     }
 
@@ -417,166 +456,138 @@ function render() {
 }
 
 // ============================================================
-// CALCULATION ENGINE (RULES 1-4)
+// ENGINE (RULES 1-4)
 // ============================================================
 function recalc() {
-    const base = [...initial.base];
-    const rd = [...initial.rd];
-    const pkg = [...initial.pkg];
+    const sopInit = initial.base.map((b,i) => b + initial.rd[i] + initial.pkg[i]);
+    const updB = [...initial.base], updR = [...initial.rd], updP = [...initial.pkg];
 
-    // RULE 1: SOP initial
-    const sopInit = base.map((b, i) => b + rd[i] + pkg[i]);
-
-    // RULE 2: SUMIFS — only Validated + Y
-    const updBase = [...base];
-    const updRd = [...rd];
     mods.forEach(m => {
         if (m.status !== 'Validated') return;
-        for (let i = 0; i < N; i++) {
-            if (m.mx[i]) {
-                updBase[i] += m.pp;
-                updRd[i] += m.tef;
-            }
-        }
+        for (let i=0;i<N;i++) { if (m.mx[i]) { updB[i]+=m.pp; updR[i]+=m.tef; } }
     });
 
-    const sopUpd = updBase.map((b, i) => b + updRd[i] + pkg[i]);
-    const delta = sopUpd.map((s, i) => s - sopInit[i]);
-
-    return { base: updBase, rd: updRd, pkg: [...pkg], sopInit, sopUpd, delta };
+    const sopUpd = updB.map((b,i) => b+updR[i]+updP[i]);
+    const delta = sopUpd.map((s,i) => s-sopInit[i]);
+    return { base:updB, rd:updR, pkg:updP, sopInit, sopUpd, delta };
 }
 
 // ============================================================
 // ROW BUILDERS
 // ============================================================
-function sectionRow(label) {
-    return `<tr class="section-row"><td colspan="11">${label}</td></tr>`;
+function L(cls,content) { return `<td class="${cls}">${content}</td>`; }
+function stk(content,bg) {
+    const s = bg ? `background:${bg} !important;` : '';
+    return L('col-a stick-a', content ? `<div style="${s}">${content}</div>` : '')
+         + L('col-b stick-b', '')
+         + L('col-c stick-c', '');
 }
 
-function subsectionRow(a, b, c, matrixLabel, pp, tef, tool) {
+function secRow(label) {
+    const span = 3 + N + 3;
+    return `<tr class="section-row"><td class="col-a stick-a" colspan="1"></td><td class="col-b stick-b" colspan="1">${label}</td><td class="col-c stick-c" colspan="1"></td>`
+         + REFS.map(()=>`<td class="col-ref"></td>`).join('')
+         + `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
+}
+
+function subRow(a,b,c,labels,pi,pj,pk) {
     let h = `<tr class="subsection-row">`;
-    h += `<td>${a}</td><td>${b}</td><td style="text-align:center;">${c}</td>`;
-    for (let i = 0; i < N; i++) h += `<td style="text-align:center;font-size:10px;">${REFS[i]}</td>`;
-    h += `<td style="text-align:center;font-size:10px;">${pp}</td>`;
-    h += `<td style="text-align:center;font-size:10px;">${tef}</td>`;
-    h += `<td style="text-align:center;font-size:10px;">${tool}</td>`;
+    h += `<td class="col-a stick-a">${a}</td>`;
+    h += `<td class="col-b stick-b">${b}</td>`;
+    h += `<td class="col-c stick-c" style="text-align:center;">${c}</td>`;
+    labels.forEach(l => h += `<td class="col-ref" style="text-align:center;font-size:10px;">${l}</td>`);
+    h += `<td class="col-extra stick-i" style="text-align:center;font-size:10px;">${pi}</td>`;
+    h += `<td class="col-extra stick-j" style="text-align:center;font-size:10px;">${pj}</td>`;
+    h += `<td class="col-extra stick-k" style="text-align:center;font-size:10px;">${pk}</td>`;
     return h + `</tr>`;
 }
 
-function refInfoRow(label, values) {
-    let h = `<tr class="ref-row"><td></td><td>${label}</td><td></td>`;
-    values.forEach(v => h += `<td class="num">${v}</td>`);
-    h += `<td></td><td></td><td></td></tr>`;
+function refRow(label, vals) {
+    let h = `<tr class="ref-row"><td class="col-a stick-a"></td><td class="col-b stick-b">${label}</td><td class="col-c stick-c"></td>`;
+    vals.forEach(v => h += `<td class="col-ref num">${v}</td>`);
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
     return h;
 }
 
-function editableRow(label, field, values) {
-    let h = `<tr><td></td><td>${label}</td><td></td>`;
-    values.forEach((v, i) => {
-        h += `<td class="num editable" data-field="${field}" data-ref="${i}">${fmt(v)}</td>`;
+function editRow(label, field, vals) {
+    let h = `<tr><td class="col-a stick-a"></td><td class="col-b stick-b">${label}</td><td class="col-c stick-c"></td>`;
+    vals.forEach((v,i) => h += `<td class="col-ref num editable" data-field="${field}" data-ref="${i}">${fmt(v)}</td>`);
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
+    return h;
+}
+
+function datRow(label, vals) {
+    let h = `<tr><td class="col-a stick-a"></td><td class="col-b stick-b">${label}</td><td class="col-c stick-c"></td>`;
+    vals.forEach(v => h += `<td class="col-ref num">${fmt(v)}</td>`);
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
+    return h;
+}
+
+function totRow(label, vals) {
+    let h = `<tr class="total-row"><td class="col-a stick-a"></td><td class="col-b stick-b">${label}</td><td class="col-c stick-c"></td>`;
+    vals.forEach(v => h += `<td class="col-ref num">${fmt(v)}</td>`);
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
+    return h;
+}
+
+function dltRow(label, vals) {
+    let h = `<tr class="delta-row"><td class="col-a stick-a"></td><td class="col-b stick-b" style="font-style:italic;color:#7f8c8d;">${label}</td><td class="col-c stick-c"></td>`;
+    vals.forEach(v => {
+        const c = v>0.001?'positive':v<-0.001?'negative':'zero';
+        h += `<td class="col-ref num ${c}">${(v>=0?'+':'')+fmt(v)}</td>`;
     });
-    h += `<td></td><td></td><td></td></tr>`;
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
     return h;
 }
 
-function dataRow(label, values) {
-    let h = `<tr><td></td><td>${label}</td><td></td>`;
-    values.forEach(v => h += `<td class="num">${fmt(v)}</td>`);
-    h += `<td></td><td></td><td></td></tr>`;
-    return h;
-}
-
-function totalRow(label, values, idPrefix) {
-    let h = `<tr class="total-row"><td></td><td>${label}</td><td></td>`;
-    values.forEach((v, i) => {
-        const id = idPrefix ? `id="${idPrefix}-${i}"` : '';
-        h += `<td class="num" ${id}>${fmt(v)}</td>`;
-    });
-    h += `<td></td><td></td><td></td></tr>`;
-    return h;
-}
-
-function deltaRow(label, values) {
-    let h = `<tr class="delta-row"><td></td><td style="font-style:italic;color:#7f8c8d;">${label}</td><td></td>`;
-    values.forEach(v => {
-        const cls = v > 0.001 ? 'positive' : v < -0.001 ? 'negative' : 'zero';
-        h += `<td class="num ${cls}">${(v>=0?'+':'') + fmt(v)}</td>`;
-    });
-    h += `<td></td><td></td><td></td></tr>`;
-    return h;
-}
-
-function projHeaderRow() {
-    let h = `<tr class="subsection-row"><td>Année</td><td>Événement</td><td></td>`;
-    for (let i = 0; i < N; i++) h += `<td style="text-align:center;font-size:10px;">${REFS[i]}</td>`;
-    h += `<td></td><td></td><td></td></tr>`;
-    return h;
-}
-
-function projDataRow(label, year, evt, prices, cls) {
+function prjRow(label, yr, evt, prices, cls) {
     let h = `<tr class="${cls||''}">`;
-    h += `<td style="font-weight:700;">${label}<br><span style="font-weight:400;color:#7f8c8d;font-size:10px;">${year}</span></td>`;
-    h += `<td style="font-size:11px;">${evt}</td><td></td>`;
-    prices.forEach(p => h += `<td class="num">${fmt(p)}</td>`);
-    h += `<td></td><td></td><td></td></tr>`;
+    h += `<td class="col-a stick-a" style="font-weight:700;">${label}<br><span style="font-weight:400;color:#7f8c8d;font-size:10px;">${yr}</span></td>`;
+    h += `<td class="col-b stick-b" style="font-size:11px;">${evt}</td>`;
+    h += `<td class="col-c stick-c"></td>`;
+    prices.forEach(p => h += `<td class="col-ref num">${fmt(p)}</td>`);
+    h += `<td class="col-extra stick-i"></td><td class="col-extra stick-j"></td><td class="col-extra stick-k"></td></tr>`;
     return h;
+}
+
+function ellRow() {
+    const span = 3+N+3;
+    return `<tr class="ellipsis-row"><td colspan="${span}">· · ·</td></tr>`;
 }
 
 // ============================================================
 // INTERACTIONS
 // ============================================================
-function chgStatus(i, val) {
-    mods[i].status = val;
-    render();
-}
+function chgSt(i,v) { mods[i].status=v; render(); }
+function chgMx(mi,ri,c) { mods[mi].mx[ri]=c?1:0; render(); }
 
-function chgMatrix(mi, ri, checked) {
-    mods[mi].mx[ri] = checked ? 1 : 0;
-    render();
-}
-
-// Inline editing
 document.addEventListener('click', function(e) {
     const cell = e.target.closest('.editable');
     if (!cell || cell.querySelector('input')) return;
-
-    const currentVal = parseFloat(cell.textContent);
-    const field = cell.dataset.field;
-    const ref = parseInt(cell.dataset.ref);
-
+    const cur = parseFloat(cell.textContent);
+    const field = cell.dataset.field, ref = parseInt(cell.dataset.ref);
     const input = document.createElement('input');
-    input.type = 'number';
-    input.step = '0.01';
-    input.value = currentVal;
-    cell.textContent = '';
-    cell.appendChild(input);
-    input.focus();
-    input.select();
-
-    function commit() {
-        const v = parseFloat(input.value) || 0;
-        initial[field][ref] = v;
-        render();
-    }
+    input.type='number'; input.step='0.01'; input.value=cur;
+    cell.textContent=''; cell.appendChild(input);
+    input.focus(); input.select();
+    function commit() { initial[field][ref]=parseFloat(input.value)||0; render(); }
     input.addEventListener('blur', commit);
     input.addEventListener('keydown', function(ev) {
-        if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
-        if (ev.key === 'Escape') { cell.textContent = fmt(currentVal); }
+        if (ev.key==='Enter') { ev.preventDefault(); commit(); }
+        if (ev.key==='Escape') { cell.textContent=fmt(cur); }
     });
 });
 
 function exportExcel() {
-    alert('En production : Apache POI exporte ce tableau complet au format Excel,\nidentique à l\'ancien fichier "Outil suivi prix _ modifications.xlsm".');
+    alert('En production : Apache POI exporte ce tableau au format Excel identique à l\'ancien fichier.');
 }
 
-// ============================================================
-// HELPERS
-// ============================================================
 function fmt(n) { return n.toFixed(3); }
 
 // ============================================================
 // INIT
 // ============================================================
+renderHeader();
 render();
 </script>
 
