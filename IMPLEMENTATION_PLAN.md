@@ -234,164 +234,375 @@ PackagingCatalog  (catalogue emballages)
 
 ---
 
-## 4. Plan d'Implémentation par Phases
+## 4. Plan d'Implémentation — MVPs Successifs
 
-### Phase 0 - Setup Technique (2 semaines)
+> **Philosophie** : Chaque sprint livre une fonctionnalité **visible et démontrable**.
+> Le coeur métier (modification/recalcul de prix) arrive dès le Sprint 1.
+> L'infrastructure technique (users, rôles, admin) est repoussée en fin de parcours.
+> Les sprints sont de **2 semaines**. Chaque MVP est un jalon de démonstration.
 
-Mise en place de l'infrastructure technique et de l'environnement de développement.
+---
 
-- [ ] Initialiser le projet Spring Boot 3.x avec Java 21
-- [ ] Créer le `docker-compose.yml` pour le dev local (PostgreSQL 16, pgAdmin)
-- [ ] Configurer Flyway pour les migrations
-- [ ] Structurer le projet en multi-modules : `domain`, `service`, `web`
-- [ ] Configurer Spring Security avec les rôles : KAM, Manager, Finance, Admin
-- [ ] Mettre en place l'UI : Bootstrap 5 + HTMX + fragments Thymeleaf
-- [ ] Créer le layout principal et la navigation
-- [ ] Configurer le build Maven (pom.xml parent + modules)
-- [ ] Mettre en place le CI/CD (GitHub Actions)
-- [ ] Configurer les tests (JUnit 5, Testcontainers, Mockito)
-- [ ] Créer les premiers scripts Flyway (schéma initial)
+### Moteur de Pricing — Règles Métier
 
-### Phase 1 - Socle Fonctionnel (6 semaines, Sprints 1-6)
+> Ces règles sont extraites des formules du fichier Excel de suivi des prix.
+> Elles constituent le coeur algorithmique de l'application et sont implémentées progressivement dans les MVPs 0 et 1.
 
-#### Sprints 1-2 : Référentiel
+#### Règle 1 — Prix SOP Initial
 
-- [ ] Entité `Company` : CRUD complet
-- [ ] Entité `Plant` : CRUD avec lien Company
-- [ ] Entité `Customer` et `CustomerSite` : CRUD complet
-- [ ] Table de référence `Incoterm` : seed des données standards (EXW, FCA, CIP...)
-- [ ] Gestion des utilisateurs et rôles (Users/Roles)
-- [ ] Pages d'administration du référentiel
-- [ ] Tests unitaires et d'intégration du référentiel
+```
+Prix SOP = Prix de base (hors packaging, hors R&D)
+         + Amortissement R&D
+         + Coûts de packaging
+```
 
-#### Sprints 3-4 : Projets
+Les trois composantes sont saisies manuellement par le KAM lors de la création du contrat.
 
-- [ ] Entité `Project` : création, édition, liste, recherche
-- [ ] Machine à états du projet : RFQ → Offer → LOI → Development → SOP → Production → EoP
-- [ ] Entité `ProductFamily` : CRUD avec lien Project
-- [ ] Entité `ProductReference` : CRUD avec lien ProductFamily
-- [ ] Entité `CustomerReference` : gestion des N références client par produit
-- [ ] Gestion documentaire : upload, stockage, téléchargement (`ProjectDocument`)
-- [ ] Saisie initiale du projet (volumes, dates, sites)
-- [ ] Vue détaillée projet avec onglets
+#### Règle 2 — Matrice d'Application & Recalcul
 
-#### Sprints 5-6 : Structure de Prix
+Chaque fiche de modification (F4) possède :
+- Un **impact prix pièce** (Part Price) et un **impact amortissement outillage** (TEF)
+- Une **matrice d'application** : pour chaque référence produit, `Y` ou `N`
+- Un **statut** : `Open`, `Validated`, ou `Canceled`
 
-- [ ] Entité `PriceBreakdown` : prix base + R&D + packaging = prix SOP
-- [ ] Calcul automatique du prix par Incoterm (EXW → FCA → CIP)
-- [ ] Surcoûts transport par destination
-- [ ] Entité `PriceHistory` : suivi mensuel avec traçabilité
-- [ ] Interface de saisie et modification des prix
-- [ ] Historique des prix avec graphique d'évolution
-- [ ] Tests des calculs de prix
+Le prix SOP actualisé est recalculé ainsi :
 
-### Phase 2 - Coeur Métier Prix (6 semaines, Sprints 7-12)
+```
+Nouveau prix de base = Prix de base initial
+    + SOMME(impact Part Price des fiches Validated ayant Y pour cette référence)
 
-#### Sprints 7-8 : Fiches de Modification (F4)
+Nouvel amortissement = Amortissement R&D initial
+    + SOMME(impact TEF des fiches Validated ayant Y pour cette référence)
 
-- [ ] Entité `ModificationSheet` : création, workflow (Open → Validated / Canceled)
-- [ ] Impact prix : décomposition EUR/pièce (prix pièce + TEF + packaging)
-- [ ] Matrice d'application (`ModificationApplication`) : modification × références
-- [ ] Interface de la matrice Y/N interactive
-- [ ] Workflow de validation avec signatures
-- [ ] Documents attachés aux fiches
-- [ ] Recalcul automatique des prix après validation
-- [ ] Amortissement des modifications (montant, volume, durée → coût/pièce)
-- [ ] Tests du recalcul automatique
+Prix SOP actualisé = Nouveau prix de base + Nouvel amortissement + Packaging
+```
 
-#### Sprints 9-10 : Amortissement R&D & Productivité
+**Règle critique** : seules les fiches au statut `Validated` et marquées `Y` pour la référence concernée participent au recalcul. Les fiches `Open` et `Canceled` n'impactent jamais les prix.
 
-- [ ] Entité `RdAmortization` : saisie coût total programme
-- [ ] Calcul auto : coût total / nb années / nb pièces
-- [ ] Recalcul si variation des volumes
-- [ ] Répartition par référence et famille
-- [ ] Transfert d'amortissement entre références
-- [ ] Entité `Productivity` : productivité contractuelle
-- [ ] Application automatique des baisses annuelles (ex : -1%/an x 5 ans)
-- [ ] Impact sur le PriceHistory
+#### Règle 3 — Productivité Contractuelle
 
-#### Sprints 11-12 : Matières Premières
+La productivité annuelle (ex : -1%/an) s'applique **uniquement sur le prix de base nu** :
 
-- [ ] Entité `RawMaterial` : suivi cours matières premières
-- [ ] Intégration cours LME (manuelle ou API)
-- [ ] Mise à jour automatique des prix avec recalcul impact matière
-- [ ] Groupement par sous-groupes de références
-- [ ] DCL (Dossier Conditions Logistiques) avec impact prix
-- [ ] Checklist des prix actés
+```
+Prix année N+1 = (Prix année N - Amortissement - Packaging) × (1 + taux_productivité)
+               + Amortissement
+               + Packaging
+```
 
-### Phase 3 - Génération Documents (4 semaines, Sprints 13-16)
+L'amortissement R&D et le packaging sont **exclus** de la base de calcul de la productivité. C'est une subtilité métier majeure : le client ne peut pas demander de productivité sur les rondelles d'amortissement.
 
-#### Sprints 13-14 : PCICN & Exports
+#### Règle 4 — Tombée des Rondelles
 
-- [ ] Génération PCICN automatique : formulaire pré-rempli format client
-- [ ] Export Excel via Apache POI (données projets, prix, modifications)
-- [ ] **Price Walk** : décomposition visuelle du prix (graphique en cascade)
-- [ ] Comparaison vs LOI : écart automatique SOP actualisé vs LOI initial
+À une date définie (fin de la période d'amortissement, ex : SOP+7), les rondelles R&D "tombent" :
 
-#### Sprints 15-16 : Signature & Communication
+```
+Prix après tombée = Prix courant - Amortissement R&D total
+```
 
-- [ ] Signature électronique PDF (iText / JasperReports)
-- [ ] Email automatique vers client avec pièces jointes (Spring Mail)
-- [ ] Checklist de validation avant envoi
-- [ ] Génération de documents standards (templates)
+Le prix baisse brutalement à cette date. C'est un événement ponctuel, pas une baisse progressive.
 
-### Phase 4 - Logistique & Capacitaire (4 semaines, Sprints 17-20)
+---
 
-#### Sprints 17-18 : Usines & Packaging
+### MVP 0 — Preuve de Concept Prix (Sprints 0-2, 6 semaines)
 
-- [ ] Fiches usines complètes (contacts, capacités, packaging disponible)
-- [ ] Entité `ProductionLine` : lignes et capacités
+> **Objectif** : Démontrer le moteur de pricing et le recalcul automatique bout en bout.
+> À la fin de ce MVP, on peut montrer le coeur de l'application à un utilisateur.
+> Implémente les **Règles 1 et 2** du moteur de pricing.
+
+#### Sprint 0 : Bootstrap technique (2 semaines)
+
+- [ ] Initialiser le projet Spring Boot 3.x / Java 21 / Maven multi-module
+- [ ] Créer le `docker-compose.yml` (PostgreSQL 16, pgAdmin)
+- [ ] Configurer Flyway, créer le schéma initial
+- [ ] Layout Thymeleaf + Bootstrap 5 + HTMX (navbar, sidebar, page blanche)
+- [ ] Données de seed : 1 projet fictif, 1 famille, quelques références, 1 client
+- [ ] Aucune authentification à ce stade (accès libre)
+
+> **Livrable visuel** : L'application démarre, la page d'accueil s'affiche, la base tourne dans Docker.
+
+#### Sprint 1 : Tableau de prix & Règle 1 (2 semaines)
+
+Implémentation de la **Règle 1 — Prix SOP Initial**.
+
+- [ ] Entités `Project`, `ProductFamily`, `ProductReference` (CRUD minimal)
+- [ ] Entité `PriceBreakdown` : les 3 composantes du prix (base, R&D, packaging)
+- [ ] **Moteur de calcul** : `Prix SOP = base + R&D + packaging`
+- [ ] **Page projet** : vue tabulaire des familles et références avec colonnes :
+
+| Famille | Référence | Prix de base | Amort. R&D | Packaging | **Prix SOP** |
+|---|---|---|---|---|---|
+| PF1 | PF1-1 | 10.00 | 4.50 | 0.50 | **15.00** |
+| PF1 | PF1-2 | 12.00 | 4.50 | 0.50 | **17.00** |
+
+- [ ] Saisie inline des prix (HTMX) : modifier un prix de base → le SOP se recalcule en temps réel
+- [ ] Seed Flyway avec données réalistes issues des Excel existants (PF1 complet)
+
+> **Livrable visuel** : On voit le tableau de prix d'un projet, on modifie un prix de base, le SOP se recalcule live. On peut comparer avec le fichier Excel.
+
+#### Sprint 2 : Matrice d'application & Règle 2 (2 semaines)
+
+Implémentation de la **Règle 2 — Matrice d'Application & Recalcul**.
+
+- [ ] Entité `ModificationSheet` (F4) : numéro, description, statut (`Open` / `Validated` / `Canceled`)
+- [ ] Entité `ModificationImpact` : impact Part Price + impact TEF (amortissement outillage) + tooling + cash
+- [ ] Entité `ModificationApplication` : matrice modification × références, valeur `Y` ou `N` (ou vide)
+- [ ] **Page fiche de modification** : formulaire avec la matrice interactive (checkboxes par référence)
+
+| Fiche | Modification | Impact | PF1-1 | PF1-2 | PF1-3 | PF1-4 | PF1-5 | Statut |
+|---|---|---|---|---|---|---|---|---|
+| F005 | Nouvelles zones d'arrêt cuir | -1.20 | N | N | N | Y | Y | Validated |
+| F012 | MAJ poids matières (PU) | 0.32 | Y | Y | Y | N | N | Validated |
+| F017 | MAJ prix PF1itchs | 0.48 | | Y | | Y | | Open |
+
+- [ ] **Moteur de recalcul** (coeur de l'application) :
+  - `Nouveau base = base initial + SUMIFS(Part Price, statut="Validated", matrice="Y")`
+  - `Nouvel amort = amort initial + SUMIFS(TEF, statut="Validated", matrice="Y")`
+  - `Prix SOP actualisé = Nouveau base + Nouvel amort + Packaging`
+- [ ] **Recalcul live** : changer le statut d'une fiche de `Open` à `Validated` → les prix se mettent à jour
+- [ ] Liste des fiches de modification avec badges de statut (vert=Validated, orange=Open, gris=Canceled)
+- [ ] **Colonne Écart vs LOI** sur le tableau de prix : `Prix SOP actualisé - Prix SOP initial`
+- [ ] Tests unitaires du moteur de recalcul avec les données PF1 de l'Excel (résultats vérifiables)
+
+> **Livrable visuel** : On crée une fiche F4, on coche les références impactées dans la matrice, on passe en "Validated" → les prix du tableau se mettent à jour automatiquement. Les fiches "Open" et "Canceled" n'impactent rien. C'est la démo clé du produit.
+
+---
+
+### MVP 1 — Moteur de Prix Complet (Sprints 3-4, 4 semaines)
+
+> **Objectif** : Compléter le moteur de prix avec les Règles 3 et 4, les Incoterms et la projection temporelle.
+> Le tableau de suivi ressemble maintenant au fichier Excel qu'il remplace.
+> Implémente les **Règles 3 et 4** du moteur de pricing.
+
+#### Sprint 3 : Productivité & projection annuelle — Règle 3 (2 semaines)
+
+Implémentation de la **Règle 3 — Productivité Contractuelle**.
+
+- [ ] Entité `Productivity` : taux (ex : -1%, -2%), durée (nb années), date de début
+- [ ] **Moteur de productivité** : `(prix - amort - packaging) × (1 + taux) + amort + packaging`
+- [ ] La productivité ne s'applique **que sur le prix pièce nu**, pas sur les rondelles ni le packaging
+- [ ] **Projection annuelle** : tableau SOP, SOP+1, SOP+2... montrant les prix futurs par référence
+
+| Année | PF1-1 | PF1-2 | PF1-3 | PF1-4 | PF1-5 |
+|---|---|---|---|---|---|
+| SOP (2014) | 15.004 | 17.004 | 19.004 | 23.964 | 28.964 |
+| SOP+1 | 14.900 | 16.884 | 18.868 | 23.774 | 28.774 |
+| SOP+2 | 14.797 | 16.765 | 18.733 | 23.585 | 28.585 |
+
+- [ ] **Timeline mensuelle** : navigation mois par mois avec les modifications appliquées à chaque date
+- [ ] Possibilité d'insérer une modification de prix à une date précise (ex : "MAJ matières en mars 2015")
+- [ ] Colonne de simulation : comparaison productivité appliquée sur totalité du prix vs sur prix nu uniquement
+
+> **Livrable visuel** : On paramètre "-1%/an pendant 4 ans", et le tableau projette les prix sur toute la durée. On voit la différence entre l'application correcte (sur prix nu) et la simulation naïve (sur tout le prix).
+
+#### Sprint 4 : Tombée des rondelles, Incoterms, Price Walk — Règle 4 (2 semaines)
+
+Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement multi-Incoterm.
+
+- [ ] **Tombée des rondelles R&D** : à la date d'échéance, `prix = prix courant - amortissement R&D`
+- [ ] Configuration de la date de tombée par amortissement (ex : SOP+7)
+- [ ] Visualisation dans la timeline : le prix chute à la date de tombée (ligne rouge sur le graphique)
+- [ ] Table `Incoterm` : seed des données standards (EXW, FCA, CIP...)
+- [ ] Entité `Customer` et `CustomerReference` : N références client par produit
+- [ ] Surcoûts transport par destination et par Incoterm
+- [ ] Calcul automatique du prix par Incoterm : `CIP = EXW + surcoût transport`
+- [ ] **Colonnes Incoterm** sur le tableau de prix :
+
+| Réf | EXW | CIP Tier1 Siemar | CIP Tier1bis Luton |
+|---|---|---|---|
+| PF1-1 | 14.94 | — | — |
+| PF6-1 | 2.87 | 3.39 | 3.55 |
+
+- [ ] **Price Walk** : graphique en cascade (Chart.js) du prix initial au prix courant
+- [ ] **Comparaison vs LOI** : colonne écart automatique SOP actualisé vs LOI initial
+
+> **Livrable visuel** : Le tableau complet ressemble à l'Excel. Le Price Walk montre visuellement la décomposition. La tombée des rondelles est visible dans la projection temporelle. On peut vérifier chaque valeur avec le fichier Excel original.
+
+---
+
+### MVP 2 — Gestion de Projet Complète (Sprints 5-6, 4 semaines)
+
+> **Objectif** : Structurer la gestion des projets, documents, et le référentiel.
+> L'application devient utilisable au quotidien par un KAM.
+
+#### Sprint 5 : Projets, familles, workflow (2 semaines)
+
+- [ ] CRUD complet `Project` : création, édition, liste avec filtres et recherche
+- [ ] Machine à états visuelle : `RFQ → Offer → LOI → Development → SOP → Production → EoP`
+- [ ] CRUD `ProductFamily` et `ProductReference` complets avec formulaires
+- [ ] **Page liste projets** : tableau filtrable avec état, client, SOP date, nb références
+- [ ] **Page détail projet** : vue avec onglets (Références/Prix, Modifications, Documents, Historique)
+- [ ] Saisie initiale du projet : volumes prévisionnels, date SOP, sites de production
+
+> **Livrable visuel** : Navigation complète entre la liste des projets et la vue détaillée. Workflow visuel de l'état du projet.
+
+#### Sprint 6 : Documents, composants dirigés, multi-sites (2 semaines)
+
+- [ ] Entité `ProjectDocument` : upload, stockage (filesystem ou S3), téléchargement
+- [ ] Types de documents : RFQ, Offre, LOI, Contrat, CSR, matrice de responsabilité
+- [ ] **Onglet Documents** : liste des documents attachés avec upload drag & drop
+- [ ] Composants dirigés (directed components) : coût et prix de vente par composant
+- [ ] Entités `Company`, `Plant` : CRUD minimal pour associer les sites de production
+- [ ] **Sélection usine** sur les références (ex : "FCA Ponte de Lima - Safe Bag")
+- [ ] Templates contractuels : choix standard / client / société
+
+> **Livrable visuel** : On peut uploader des documents sur un projet, voir les composants dirigés, choisir le site de production.
+
+---
+
+### MVP 3 — Génération de Documents (Sprints 7-8, 4 semaines)
+
+> **Objectif** : Générer automatiquement les documents métier (PCICN, exports Excel).
+> Le KAM ne remplit plus manuellement les formulaires.
+
+#### Sprint 7 : PCICN & Export Excel (2 semaines)
+
+- [ ] Génération PCICN automatique (PDF via iText/JasperReports) pré-remplie avec les données du projet
+- [ ] Template PCICN configurable (format standard, format client)
+- [ ] Export Excel du tableau de suivi des prix (Apache POI) — format identique à l'Excel existant
+- [ ] Export de la liste des fiches de modification avec statuts et impacts
+- [ ] **Boutons d'export** sur les pages projet et modifications
+
+> **Livrable visuel** : Bouton "Générer PCICN" → PDF téléchargé. Bouton "Export Excel" → fichier identique aux anciens tableaux.
+
+#### Sprint 8 : Matières premières & DCL (2 semaines)
+
+- [ ] Entité `RawMaterial` : suivi des cours matières premières
+- [ ] Saisie manuelle des cours (LME) avec historique
+- [ ] Calcul impact matière par référence et par sous-groupe
+- [ ] MAJ groupée des prix matière sur les références impactées
+- [ ] DCL (Dossier Conditions Logistiques) avec impact sur le packaging
+- [ ] Checklist des prix actés (contrat signé, PO reçu, etc.)
+
+> **Livrable visuel** : On met à jour un cours de matière → les prix impactés sont recalculés. Checklist visuelle des prix actés.
+
+---
+
+### MVP 4 — Dashboard & Visibilité (Sprints 9-10, 4 semaines)
+
+> **Objectif** : Donner une vue d'ensemble aux managers et KAM.
+> Premiers tableaux de bord et consolidation.
+
+#### Sprint 9 : Dashboard projet & santé du compte (2 semaines)
+
+- [ ] **Page Dashboard** : vue d'ensemble par projet (marge, écart LOI, nb modifications, statut)
+- [ ] Indicateurs clés : CA estimé, marge, écart budget
+- [ ] Graphiques interactifs (Chart.js/ApexCharts) : évolution des prix, répartition par famille
+- [ ] Consolidation multi-projets par client
+- [ ] Alertes visuelles : prix NOK, PO manquants, fiches F4 en attente
+
+> **Livrable visuel** : Page dashboard avec graphiques et indicateurs de santé. Vue consolidée par client.
+
+#### Sprint 10 : Reporting & exports avancés (2 semaines)
+
+- [ ] Platform summary : synthèse par plateforme véhicule
+- [ ] Business case dynamique mis à jour avec les données réelles
+- [ ] Performance commerciale : extracts par KAM, par compte
+- [ ] Exports PDF/Excel des dashboards et rapports
+- [ ] Filtres et personnalisation des vues (période, client, famille, usine)
+
+> **Livrable visuel** : Rapports exportables. Le manager peut suivre la performance de ses KAM.
+
+---
+
+### MVP 5 — Logistique & Packaging (Sprints 11-12, 4 semaines)
+
+> **Objectif** : Gérer le packaging et le capacitaire usine.
+
+#### Sprint 11 : Usines, packaging, catalogue (2 semaines)
+
+- [ ] CRUD `Plant` et `ProductionLine` complets : lignes, capacités, contacts
 - [ ] Entité `PackagingCatalog` : catalogue emballages avec prix standards
-- [ ] Configurateur UC/UM avec drag & drop
+- [ ] Configurateur UC/UM (drag & drop ou sélection) pour constituer les unités de conditionnement
 - [ ] Import de photos d'emballages
-- [ ] Calcul du coût packaging par pièce
+- [ ] Calcul automatique du coût packaging par pièce
+- [ ] **Fiches usines** : vue détaillée avec lignes, capacité, contacts, packaging dispo
 
-#### Sprints 19-20 : Plan de Charge & Capacitaire
+> **Livrable visuel** : Fiche usine complète. Configurateur packaging avec calcul de coût.
+
+#### Sprint 12 : Capacitaire & plan de charge (2 semaines)
 
 - [ ] Plan de charge semaine/mois par ligne de production
 - [ ] Vérification capacitaire vs volumes commandés
 - [ ] Alertes de dépassement de capacité
 - [ ] Vue consolidée par usine
+- [ ] Lien entre les références et les lignes de production
 
-### Phase 5 - Dashboard & Reporting (4 semaines, Sprints 21-24)
+> **Livrable visuel** : Diagramme de charge par usine. Alertes rouges si dépassement capacité.
 
-#### Sprints 21-22 : Dashboards
+---
 
-- [ ] Dashboard santé du compte (qualité, budget, marge)
-- [ ] Consolidation multi-projets par compte / PL / BU
-- [ ] Platform summary
-- [ ] Graphiques interactifs (Chart.js ou ApexCharts)
+### MVP 6 — Prévisions & Intégrations (Sprints 13-14, 4 semaines)
 
-#### Sprints 23-24 : Reporting Avancé
+> **Objectif** : Prévisions de vente, EDI, tooling.
 
-- [ ] Business case dynamique
-- [ ] Performance commerciale et achat
-- [ ] Exports PDF/Excel des rapports
-- [ ] Filtres et personnalisation des vues
+#### Sprint 13 : Forecast, EDI, B101 (2 semaines)
 
-### Phase 6 - Intégrations & Avancé (6 semaines, Sprints 25-30)
+- [ ] Forecast de vente par référence et par période
+- [ ] Import fichiers EDI clients
+- [ ] Comparaison volumes réels (MAD) vs budget
+- [ ] Rappels des productivités à venir avec demande d'accord finance
+- [ ] Génération automatique B101
 
-#### Sprints 25-26 : Forecast & EDI
+> **Livrable visuel** : Tableau de forecast avec écarts vs budget. Alertes productivités à venir.
 
-- [ ] Forecast de vente par référence
-- [ ] Récupération EDI clients
-- [ ] Comparaison MAD/Budget
-- [ ] Rappels des productivités à venir avec accord finance
-- [ ] Génération B101
+#### Sprint 14 : Tooling, facturation, signature (2 semaines)
 
-#### Sprints 27-28 : RFQ & Workflow
+- [ ] Suivi commandes tooling : PO manquant, en cours, reçu
+- [ ] Trigger facturation : email automatique vers finance
+- [ ] PO tracking sur les fiches de modification
+- [ ] Signature électronique PDF (intégration API ou signature simple)
+- [ ] Email automatique vers client avec pièces jointes (Spring Mail)
 
-- [ ] RFQ en ligne partagé avec le client
-- [ ] Calcul NPV automatique
-- [ ] Workflow de validation RFQ par managers (type CAA Valeo)
+> **Livrable visuel** : Suivi tooling avec statuts visuels. Signature et envoi en un clic.
+
+---
+
+### MVP 7 — Offres, RFQ & Administration (Sprints 15-16, 4 semaines)
+
+> **Objectif** : RFQ en ligne, workflow de validation, et enfin la gestion des utilisateurs.
+
+#### Sprint 15 : RFQ & offres prototypes (2 semaines)
+
 - [ ] Gestion des offres prototypes (quantités, prix)
+- [ ] Formulaire RFQ en ligne partageable avec le client
+- [ ] Calcul NPV automatique sur la durée du projet
+- [ ] Workflow de validation RFQ par managers (type CAA Valeo)
 
-#### Sprints 29-30 : Tooling & Intégrations
+> **Livrable visuel** : Formulaire RFQ interactif. Workflow d'approbation avec statuts.
 
-- [ ] Suivi commandes tooling (PO manquant, en cours, reçu)
-- [ ] Trigger facturation (email automatique vers finance)
-- [ ] PO tracking
-- [ ] Étude d'intégration SAP
+#### Sprint 16 : Utilisateurs, rôles, sécurité (2 semaines)
+
+- [ ] Spring Security : authentification (form login)
+- [ ] Gestion des utilisateurs : CRUD, activation/désactivation
+- [ ] Rôles et permissions : KAM, Manager, Finance, Admin
+- [ ] Pages d'administration : référentiel, utilisateurs, paramétrage
+- [ ] Restriction d'accès par rôle sur les pages et actions
+- [ ] Audit trail : qui a modifié quoi et quand
+
+> **Livrable visuel** : Login, gestion des utilisateurs. Chaque KAM ne voit que ses projets.
+
+---
+
+### MVP 8 — Intégrations Externes (Sprints 17-18, 4 semaines)
+
+> **Objectif** : Connexion aux systèmes externes. Dernier jalon.
+
+#### Sprint 17 : Intégration LME & cours matières automatiques (2 semaines)
+
+- [ ] API d'import des cours LME automatique (ou semi-auto)
+- [ ] Recalcul automatique des impacts matière à la mise à jour des cours
+- [ ] Notifications aux KAM concernés lors d'une variation significative
+
+> **Livrable visuel** : Les cours se mettent à jour automatiquement, les prix impactés sont signalés.
+
+#### Sprint 18 : Étude & prototype intégration SAP (2 semaines)
+
+- [ ] Étude de faisabilité SAP (API RFC/BAPI ou fichier plat)
+- [ ] Prototype d'import/export de données SAP
+- [ ] CI/CD complet (GitHub Actions) : build, tests, déploiement
+- [ ] Documentation technique et utilisateur
+
+> **Livrable visuel** : Démo d'échange de données avec SAP. Documentation accessible.
 
 ---
 
@@ -434,53 +645,53 @@ torchebald/
 
 ---
 
-## 6. MVP et Priorités
+## 6. Jalons & Critères de Succès
 
-### Périmètre MVP : Phases 0 à 2 (~14 semaines)
+### MVP 0 — Preuve de Concept (Sprint 0-2) — Le plus important
 
-Le MVP couvre les fonctionnalités critiques qui remplacent directement les tableurs Excel existants :
+Implémente les **Règles Métier 1 et 2**. À la fin de ce jalon, on peut démontrer :
 
-| Priorité | Fonctionnalité | Phase | Modules |
-|---|---|---|---|
-| **P0** | Gestion des projets, familles, références | Phase 1 | Module 1 |
-| **P0** | Structure de prix avec Incoterms | Phase 1 | Module 2 (partiel) |
-| **P0** | Fiches de modification (F4) avec recalcul auto | Phase 2 | Module 3 |
-| **P0** | Amortissement R&D et productivités | Phase 2 | Modules 4, 2 (partiel) |
-| **P0** | Suivi mensuel des prix | Phase 2 | Module 2 (partiel) |
+- [ ] Tableau de prix avec décomposition (base + R&D + packaging) → **Règle 1**
+- [ ] Fiche de modification F4 avec matrice d'application Y/N → **Règle 2**
+- [ ] **Recalcul automatique** : seules les fiches `Validated` + `Y` impactent le prix ← coeur du produit
+- [ ] Écart vs prix initial affiché sur chaque référence
+- [ ] Résultats vérifiables avec le fichier Excel PF1 existant
 
-### Critères de succès du MVP
+### MVP 1 — Moteur de Prix Complet (Sprints 3-4)
 
-- [ ] Un KAM peut créer un projet et saisir les références avec leurs prix
-- [ ] Les prix sont calculés automatiquement par Incoterm
-- [ ] Les fiches de modification recalculent automatiquement les prix impactés
-- [ ] L'amortissement R&D est calculé et réparti par référence
-- [ ] Les productivités contractuelles sont appliquées automatiquement
-- [ ] L'historique mensuel des prix est traçable et consultable
-- [ ] Les données sont persistées en base et non plus dans des fichiers Excel
+Implémente les **Règles Métier 3 et 4**. Le moteur de pricing est complet :
 
-### Après le MVP
+- [ ] Productivité sur prix pièce nu uniquement (exclut amort + packaging) → **Règle 3**
+- [ ] Projection annuelle (SOP, SOP+1, SOP+2...) avec timeline mensuelle
+- [ ] Tombée des rondelles R&D à date d'échéance → **Règle 4**
+- [ ] Prix par Incoterm (EXW, FCA, CIP) avec colonnes multi-clients
+- [ ] Price Walk visuel (graphique en cascade)
 
-| Priorité | Fonctionnalité | Phase |
-|---|---|---|
-| **P1** | Génération PCICN, exports Excel/PDF, Price Walk | Phase 3 |
-| **P1** | Signature électronique, emails automatiques | Phase 3 |
-| **P2** | Logistique, packaging, capacitaire usines | Phase 4 |
-| **P2** | Dashboards et reporting consolidé | Phase 5 |
-| **P3** | Forecast, EDI, RFQ en ligne, tooling | Phase 6 |
+### MVP 2 — Utilisable au Quotidien (Sprints 5-6)
+
+- [ ] Navigation projet complète (liste, détail, onglets)
+- [ ] Upload de documents (RFQ, LOI, contrats)
+- [ ] Workflow visuel de l'état du projet
+
+### MVP 3-8 — Enrichissements Progressifs (Sprints 7-18)
+
+Chaque MVP ajoute une couche de valeur démontrable (documents, dashboard, logistique, intégrations) sans jamais casser ce qui fonctionne.
 
 ---
 
 ## Annexe - Estimation Globale
 
-| Phase | Durée | Sprints | Contenu principal |
+| MVP | Sprints | Durée | Contenu principal |
 |---|---|---|---|
-| Phase 0 | 2 semaines | — | Setup technique |
-| Phase 1 | 6 semaines | 1-6 | Référentiel, projets, structure prix |
-| Phase 2 | 6 semaines | 7-12 | Modifications, R&D, matières |
-| Phase 3 | 4 semaines | 13-16 | Documents, exports, signatures |
-| Phase 4 | 4 semaines | 17-20 | Logistique, packaging, capacitaire |
-| Phase 5 | 4 semaines | 21-24 | Dashboards, reporting |
-| Phase 6 | 6 semaines | 25-30 | Intégrations, EDI, tooling |
-| **Total** | **~32 semaines** | **30 sprints** | **12 modules** |
+| MVP 0 | 0-2 | 6 sem. | Bootstrap + Tableau de prix + Fiches modif + Recalcul auto |
+| MVP 1 | 3-4 | 4 sem. | Incoterms, R&D, productivités, Price Walk |
+| MVP 2 | 5-6 | 4 sem. | Gestion de projet complète, documents, workflow |
+| MVP 3 | 7-8 | 4 sem. | Génération PCICN, export Excel, matières premières |
+| MVP 4 | 9-10 | 4 sem. | Dashboard, reporting, consolidation |
+| MVP 5 | 11-12 | 4 sem. | Logistique, packaging, capacitaire |
+| MVP 6 | 13-14 | 4 sem. | Forecast, EDI, tooling, signature |
+| MVP 7 | 15-16 | 4 sem. | RFQ en ligne, utilisateurs, rôles, sécurité |
+| MVP 8 | 17-18 | 4 sem. | Intégrations LME auto, SAP, documentation |
+| **Total** | **0-18** | **~38 sem.** | **12 modules, 9 MVPs démontrables** |
 
-> **Note :** Les estimations sont indicatives et basées sur des sprints d'une semaine. Elles seront affinées lors du démarrage de chaque phase.
+> **Note :** Sprints de 2 semaines. Les estimations seront affinées à chaque revue de MVP. L'ordre des MVPs 3+ peut être réarrangé selon le feedback utilisateur — c'est le principe.
