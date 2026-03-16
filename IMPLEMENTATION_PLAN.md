@@ -241,7 +241,8 @@ PackagingCatalog  (catalogue emballages)
 Mise en place de l'infrastructure technique et de l'environnement de développement.
 
 - [ ] Initialiser le projet Spring Boot 3.x avec Java 21
-- [ ] Configurer PostgreSQL 16 et Flyway pour les migrations
+- [ ] Créer le `docker-compose.yml` pour le dev local (PostgreSQL 16, pgAdmin)
+- [ ] Configurer Flyway pour les migrations
 - [ ] Structurer le projet en multi-modules : `domain`, `service`, `web`
 - [ ] Configurer Spring Security avec les rôles : KAM, Manager, Finance, Admin
 - [ ] Mettre en place l'UI : Bootstrap 5 + HTMX + fragments Thymeleaf
@@ -400,6 +401,7 @@ Mise en place de l'infrastructure technique et de l'environnement de développem
 |---|---|---|
 | **Backend** | Spring Boot 3.x, Java 21 | Écosystème mature, support LTS, records Java |
 | **Persistence** | Spring Data JPA / Hibernate, PostgreSQL 16 | ORM standard, JSONB pour données flexibles |
+| **Dev local** | Docker Compose (PostgreSQL, pgAdmin) | Environnement reproductible, zéro install locale |
 | **Migrations** | Flyway | Versioning du schéma, reproductibilité |
 | **Frontend** | Thymeleaf + HTMX + Bootstrap 5 | Server-side rendering avec interactivité AJAX |
 | **Sécurité** | Spring Security | Rôles (KAM, Manager, Finance, Admin), CSRF, sessions |
