@@ -103,7 +103,7 @@ Suivi des matières premières et de leur impact sur les prix.
 Gestion du footprint industriel et du plan de charge.
 
 - [ ] Footprint industriel (fiches usines, lignes de production, capacités)
-- [ ] Plan de charge semaine/mois
+- [ ] Plan de charge semaine/mois + **granularité jour** (Sprint 18)
 - [ ] Vérification capacitaire vs volumes commandés
 - [ ] Contacts usine, packaging disponible par site
 
@@ -123,6 +123,7 @@ Forecast de ventes et intégration EDI clients.
 - [ ] Forecast de vente par référence
 - [ ] Récupération des EDI clients
 - [ ] Comparaison MAD/Budget
+- [ ] **Budget auto à court et moyen terme** (CA prév. = prix × volumes × mix) (Sprint 17)
 - [ ] Rappels des productivités à venir avec accord finance
 - [ ] Génération B101
 
@@ -587,22 +588,32 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 
 > **Objectif** : Connexion aux systèmes externes. Dernier jalon.
 
-#### Sprint 17 : Intégration LME & cours matières automatiques (2 semaines)
+#### Sprint 17 : Intégration LME & Budget automatique (2 semaines)
 
 - [ ] API d'import des cours LME automatique (ou semi-auto)
 - [ ] Recalcul automatique des impacts matière à la mise à jour des cours
 - [ ] Notifications aux KAM concernés lors d'une variation significative
+- [ ] **Budget auto à court et moyen terme** : génération automatique du budget commercial
+  - [ ] CA prévisionnel = prix × volumes × mix, calculé par référence, famille et projet
+  - [ ] Projections court terme (année en cours) et moyen terme (SOP → EoP)
+  - [ ] Export du budget au format Excel (compatible finance)
+  - [ ] Comparaison budget vs réalisé (écarts en % et en valeur absolue)
 
-> **Livrable visuel** : Les cours se mettent à jour automatiquement, les prix impactés sont signalés.
+> **Livrable visuel** : Les cours se mettent à jour automatiquement, les prix impactés sont signalés. Page budget avec CA prévisionnel généré automatiquement et écarts vs réalisé.
 
-#### Sprint 18 : Étude & prototype intégration SAP (2 semaines)
+#### Sprint 18 : Intégration SAP & Plan de charge journalier (2 semaines)
 
 - [ ] Étude de faisabilité SAP (API RFC/BAPI ou fichier plat)
 - [ ] Prototype d'import/export de données SAP
+- [ ] **Plan de charge par jour** : granularité journalière du capacitaire
+  - [ ] Vue plan de charge jour/semaine/mois (toggle) par ligne de production
+  - [ ] Calendrier interactif avec visualisation de la charge quotidienne
+  - [ ] Alertes de dépassement de capacité à la journée
+  - [ ] Lissage automatique suggéré en cas de pic journalier
 - [ ] CI/CD complet (GitHub Actions) : build, tests, déploiement
 - [ ] Documentation technique et utilisateur
 
-> **Livrable visuel** : Démo d'échange de données avec SAP. Documentation accessible.
+> **Livrable visuel** : Démo d'échange de données avec SAP. Plan de charge avec vue journalière et calendrier interactif. Documentation accessible.
 
 ---
 
@@ -691,7 +702,7 @@ Chaque MVP ajoute une couche de valeur démontrable (documents, dashboard, logis
 | MVP 5 | 11-12 | 4 sem. | Logistique, packaging, capacitaire |
 | MVP 6 | 13-14 | 4 sem. | Forecast, EDI, tooling, signature |
 | MVP 7 | 15-16 | 4 sem. | RFQ en ligne, utilisateurs, rôles, sécurité |
-| MVP 8 | 17-18 | 4 sem. | Intégrations LME auto, SAP, documentation |
+| MVP 8 | 17-18 | 4 sem. | Intégrations LME auto, **budget auto**, SAP, **plan de charge jour**, documentation |
 | **Total** | **0-18** | **~38 sem.** | **12 modules, 9 MVPs démontrables** |
 
 > **Note :** Sprints de 2 semaines. Les estimations seront affinées à chaque revue de MVP. L'ordre des MVPs 3+ peut être réarrangé selon le feedback utilisateur — c'est le principe.
