@@ -32,8 +32,9 @@
 
     <!-- Price table -->
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-white border-bottom fw-semibold">
-            Tableau de prix — Règle 1 : SOP = Base + R&amp;D + Packaging
+        <div class="card-header bg-white border-bottom fw-semibold d-flex justify-content-between align-items-center">
+            <span>Tableau de prix — Règle 1 : SOP = Base + R&amp;D + Packaging</span>
+            <small class="text-muted fw-normal">Cliquez sur une famille pour le tableau complet</small>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -56,7 +57,7 @@
                     </thead>
                     <tbody>
                         <th:block th:each="family : ${families}">
-                            <th:block th:each="ref : ${family.references}">
+                            <th:block th:each="ref, rStat : ${family.references}">
                                 <tr th:replace="~{projects/_price-row :: price-row(${ref}, ${ref.priceBreakdown}, ${project.id})}"></tr>
                             </th:block>
                         </th:block>

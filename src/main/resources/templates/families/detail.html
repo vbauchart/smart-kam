@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${view.family.code + ' — ' + view.project.name})}"></head>
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container-fluid p-0">
+
+    <!-- Dark header bar -->
+    <div class="page-header d-flex align-items-center gap-3 px-4 py-3">
+        <div class="flex-grow-1">
+            <nav aria-label="breadcrumb" class="mb-1">
+                <ol class="breadcrumb mb-0" style="font-size:11px;">
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/projects}" class="text-white-50 text-decoration-none">Projets</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/projects/{id}(id=${view.project.id})}"
+                           class="text-white-50 text-decoration-none"
+                           th:text="${view.project.name}">Projet</a>
+                    </li>
+                    <li class="breadcrumb-item active text-white"
+                        th:text="${view.family.code + ' — ' + view.family.designation}">Famille</li>
+                </ol>
+            </nav>
+            <h1 class="h5 fw-bold text-white mb-0"
+                th:text="${view.family.code + ' — ' + view.family.designation}">Famille</h1>
+        </div>
+        <div class="d-flex align-items-center gap-3" style="font-size:11px;color:rgba(255,255,255,.7);">
+            <span>Projet : <strong class="text-white" th:text="${view.project.name}"></strong></span>
+            <span th:if="${view.project.sopDate != null}">
+                SOP : <strong class="text-white"
+                              th:text="${#temporals.format(view.project.sopDate, 'MMM yyyy')}"></strong>
+            </span>
+            <span class="badge"
+                  th:classappend="${view.project.status.name() == 'PRODUCTION'} ? 'bg-success' :
+                                   (${view.project.status.name() == 'EOP'} ? 'bg-dark' : 'bg-primary')"
+                  th:text="${view.project.status}" style="font-size:10px;"></span>
+        </div>
+    </div>
+
+    <!-- Info banner -->
+    <div class="info-banner">
+        Cellules jaunes = éditables — cliquez pour modifier.
+        Changez un statut de fiche ou cochez la matrice pour recalcul instantané (sections ③④).
+        Les colonnes par référence défilent horizontalement.
+    </div>
+
+    <!-- Scrollable sheet -->
+    <div class="sheet-wrapper">
+        <table class="sheet" id="main-sheet">
+            <thead>
+                <tr>
+                    <th class="col-a stick-a"></th>
+                    <th class="col-b stick-b" style="text-align:left;"
+                        th:text="${view.project.name + ' — ' + view.family.code}">Projet</th>
+                    <th class="col-c stick-c"></th>
+                    <th class="col-ref" th:each="ref : ${view.refs}"
+                        th:text="${ref.refInternal}">REF</th>
+                    <th class="col-extra stick-i">Part Price</th>
+                    <th class="col-extra stick-j">TEF</th>
+                    <th class="col-extra stick-k">Tooling</th>
+                </tr>
+            </thead>
+
+            <!-- ===============================================================
+                 TBODY 1 — Sections ① Contrat Initial  +  ② Modifications
+                 =============================================================== -->
+            <tbody>
+
+                <!-- ① Section header -->
+                <tr class="section-row sec-initial">
+                    <td class="stick-a" style="border-left:4px solid var(--sec-initial);"></td>
+                    <td class="stick-b">① Contrat Initial (F1)</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="r : ${view.refs}"><td class="col-ref"></td></th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Sub-header -->
+                <tr class="subsection-row">
+                    <td class="stick-a"></td><td class="stick-b"></td><td class="stick-c"></td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref" style="text-align:center;" th:text="${ref.refInternal}">—</td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Ref. client -->
+                <tr class="ref-row">
+                    <td class="stick-a"></td>
+                    <td class="stick-b">Réf. client</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref num" th:text="${ref.refClient}">—</td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Prix de base — editable inline -->
+                <tr>
+                    <td class="stick-a"></td>
+                    <td class="stick-b">Prix de base</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref num editable"
+                            x-data="{ editing: false }"
+                            @click="editing = true; $nextTick(() => $refs.inp.select())">
+                            <span x-show="!editing"
+                                  th:text="${#numbers.formatDecimal(ref.priceBreakdown.basePrice, 1, 'NONE', 3, 'POINT')}">—</span>
+                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
+                                   name="base_price"
+                                   th:value="${ref.priceBreakdown.basePrice}"
+                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/base(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                   hx-trigger="blur"
+                                   hx-include="this"
+                                   hx-target="#sections-computed"
+                                   hx-swap="outerHTML"
+                                   @keydown.enter.prevent="$el.blur()"
+                                   @keydown.escape.prevent="editing = false"
+                                   style="width:72px;">
+                        </td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Amort. R&D — editable inline -->
+                <tr>
+                    <td class="stick-a"></td>
+                    <td class="stick-b">Amort. R&amp;D</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref num editable"
+                            x-data="{ editing: false }"
+                            @click="editing = true; $nextTick(() => $refs.inp.select())">
+                            <span x-show="!editing"
+                                  th:text="${#numbers.formatDecimal(ref.priceBreakdown.rdAmortization, 1, 'NONE', 3, 'POINT')}">—</span>
+                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
+                                   name="rd_value"
+                                   th:value="${ref.priceBreakdown.rdAmortization}"
+                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/rd(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                   hx-trigger="blur"
+                                   hx-include="this"
+                                   hx-target="#sections-computed"
+                                   hx-swap="outerHTML"
+                                   @keydown.enter.prevent="$el.blur()"
+                                   @keydown.escape.prevent="editing = false"
+                                   style="width:72px;">
+                        </td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Packaging — editable inline -->
+                <tr>
+                    <td class="stick-a"></td>
+                    <td class="stick-b">Packaging</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref num editable"
+                            x-data="{ editing: false }"
+                            @click="editing = true; $nextTick(() => $refs.inp.select())">
+                            <span x-show="!editing"
+                                  th:text="${#numbers.formatDecimal(ref.priceBreakdown.packaging, 1, 'NONE', 3, 'POINT')}">—</span>
+                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
+                                   name="pkg_value"
+                                   th:value="${ref.priceBreakdown.packaging}"
+                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/pkg(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                   hx-trigger="blur"
+                                   hx-include="this"
+                                   hx-target="#sections-computed"
+                                   hx-swap="outerHTML"
+                                   @keydown.enter.prevent="$el.blur()"
+                                   @keydown.escape.prevent="editing = false"
+                                   style="width:72px;">
+                        </td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- SOP Initial total (OOB-swappable) -->
+                <tr id="sop-initial-row" class="total-row tot-initial">
+                    <td class="stick-a"></td>
+                    <td class="stick-b fw-bold">Prix SOP Initial</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="sop : ${view.sopInitials}">
+                        <td class="col-ref num fw-bold"
+                            th:text="${#numbers.formatDecimal(sop, 1, 'NONE', 3, 'POINT')}">—</td>
+                    </th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- Spacer -->
+                <tr class="spacer-row">
+                    <td class="stick-a"></td><td class="stick-b"></td><td class="stick-c"></td>
+                    <th:block th:each="r : ${view.refs}"><td class="col-ref"></td></th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- ② Section header -->
+                <tr class="section-row sec-modif">
+                    <td class="stick-a" style="border-left:4px solid var(--sec-modif);"></td>
+                    <td class="stick-b">② Fiches de Modification (F4 / PCICN)</td>
+                    <td class="stick-c"></td>
+                    <th:block th:each="r : ${view.refs}"><td class="col-ref"></td></th:block>
+                    <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+                </tr>
+
+                <!-- ② Sub-header -->
+                <tr class="subsection-row">
+                    <td class="stick-a">Statut</td>
+                    <td class="stick-b">Modification</td>
+                    <td class="stick-c" style="text-align:center;">Impact</td>
+                    <th:block th:each="ref : ${view.refs}">
+                        <td class="col-ref" style="text-align:center;" th:text="${ref.refInternal}">—</td>
+                    </th:block>
+                    <td class="stick-i" style="text-align:center;">PP</td>
+                    <td class="stick-j" style="text-align:center;">TEF</td>
+                    <td class="stick-k" style="text-align:center;">Tooling</td>
+                </tr>
+
+                <!-- Modification rows -->
+                <th:block th:each="sr : ${view.sheets}">
+                    <tr class="modif-row"
+                        th:classappend="${sr.sheet.status.name() == 'CANCELED'} ? ' canceled'">
+
+                        <td class="stick-a">
+                            <select class="status-select"
+                                    th:classappend="${sr.sheet.status.name() == 'VALIDATED'} ? ' st-validated' :
+                                                     (${sr.sheet.status.name() == 'OPEN'} ? ' st-open' : ' st-canceled')"
+                                    name="status"
+                                    th:attr="hx-post=@{/projects/{p}/families/{f}/sheets/{s}/status(p=${view.project.id},f=${view.family.id},s=${sr.sheet.id})}"
+                                    hx-trigger="change"
+                                    hx-include="this"
+                                    hx-target="#sections-computed"
+                                    hx-swap="outerHTML">
+                                <option value="OPEN"
+                                        th:selected="${sr.sheet.status.name() == 'OPEN'}">Open</option>
+                                <option value="VALIDATED"
+                                        th:selected="${sr.sheet.status.name() == 'VALIDATED'}">Validated</option>
+                                <option value="CANCELED"
+                                        th:selected="${sr.sheet.status.name() == 'CANCELED'}">Canceled</option>
+                            </select>
+                        </td>
+
+                        <td class="stick-b">
+                            <strong th:text="${sr.sheet.number}"></strong>
+                            <span th:if="${sr.sheet.description != null}"
+                                  class="text-muted small ms-1"
+                                  th:text="${' — ' + sr.sheet.description}"></span>
+                        </td>
+
+                        <td class="stick-c num fw-semibold"
+                            th:with="total=${sr.impact != null ?
+                                sr.impact.partPrice.add(sr.impact.tefAmortization) :
+                                T(java.math.BigDecimal).ZERO}"
+                            th:text="${#numbers.formatDecimal(total, 1, 'NONE', 3, 'POINT')}">—</td>
+
+                        <!-- Application matrix -->
+                        <th:block th:each="ra : ${sr.applications}">
+                            <td class="col-ref matrix-cell">
+                                <input type="checkbox"
+                                       th:checked="${ra.applies}"
+                                       th:data-url="@{/projects/{p}/families/{f}/sheets/{s}/references/{r}/applies(p=${view.project.id},f=${view.family.id},s=${sr.sheet.id},r=${ra.refId})}"
+                                       hx-on:change="htmx.ajax('POST', this.dataset.url + '?applies=' + this.checked, {target: '#sections-computed', swap: 'outerHTML', source: this})">
+                            </td>
+                        </th:block>
+
+                        <!-- Right sticky -->
+                        <td class="stick-i num"
+                            th:text="${sr.impact != null ? #numbers.formatDecimal(sr.impact.partPrice, 1, 'NONE', 3, 'POINT') : ''}">—</td>
+                        <td class="stick-j num"
+                            th:text="${(sr.impact != null and sr.impact.tefAmortization.compareTo(T(java.math.BigDecimal).ZERO) != 0) ?
+                                #numbers.formatDecimal(sr.impact.tefAmortization, 1, 'NONE', 3, 'POINT') : ''}">—</td>
+                        <td class="stick-k num text-muted"
+                            th:text="${(sr.impact != null and sr.impact.toolingAmount != null) ?
+                                #numbers.formatDecimal(sr.impact.toolingAmount, 0, 'COMMA', 0, 'POINT') : ''}">—</td>
+                    </tr>
+                </th:block>
+
+            </tbody>
+
+            <!-- ===============================================================
+                 TBODY 2 — Sections ③ Updated Prices  +  ④ Projection
+                 Replaced as a whole by HTMX (outerHTML on #sections-computed)
+                 =============================================================== -->
+            <tbody id="sections-computed">
+                <th:block th:replace="~{families/_recalc-fragment :: computed-rows}"></th:block>
+            </tbody>
+
+        </table>
+    </div>
+
+    <div class="info-banner mt-0 mb-3">
+        <strong>Règle 3 :</strong> Productivité −1 % / an × 4 ans &nbsp;·&nbsp;
+        <strong>Règle 4 :</strong> Tombée des rondelles R&amp;D à SOP+7
+    </div>
+
+</main>
+
+<th:block th:replace="~{layout :: scripts}"></th:block>
+</body>
+</html>

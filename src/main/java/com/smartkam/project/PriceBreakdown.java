@@ -43,6 +43,9 @@ class PriceBreakdown {
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 
     public void setBasePrice(BigDecimal basePrice) { this.basePrice = basePrice; }
+    public void setRdAmortization(BigDecimal rdAmortization) { this.rdAmortization = rdAmortization; }
+    public void setPackaging(BigDecimal packaging) { this.packaging = packaging; }
     public void setSopInitial(BigDecimal sopInitial) { this.sopInitial = sopInitial; }
+    public void setSopUpdated(BigDecimal sopUpdated) { this.sopUpdated = sopUpdated; }
     public void setUpdatedAt(OffsetDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

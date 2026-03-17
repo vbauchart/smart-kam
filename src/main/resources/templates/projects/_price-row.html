@@ -12,7 +12,11 @@
     th:id="'row-ref-' + ${ref.id}"
     x-data="{ editing: false }">
 
-    <td class="ps-3 text-muted small fw-medium" th:text="${ref.family.code}">PF1</td>
+    <td class="ps-3 small fw-medium">
+        <a th:href="@{/projects/{pid}/families/{fid}(pid=${projectId},fid=${ref.family.id})}"
+           class="text-decoration-none text-muted"
+           th:text="${ref.family.code}">PF1</a>
+    </td>
 
     <td class="fw-medium" th:text="${ref.refInternal}">PF1-1</td>
 
