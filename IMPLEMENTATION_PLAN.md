@@ -44,10 +44,10 @@ L'application a pour objectif de **remplacer les tableurs Excel existants** util
 Gestion complète du référentiel projet et de son cycle de vie.
 
 - [ ] Création de projet (nom, description, date SOP, sites de production, volumes prévisionnels)
-- [ ] Familles de produits (PF1, PF2...) avec désignation
-- [ ] Références produit : référence interne, référence client, référence Tier1 — une même pièce possède N références selon le client
+- [x] Familles de produits (PF1, PF2...) avec désignation
+- [x] Références produit : référence interne, référence client, référence Tier1 — une même pièce possède N références selon le client
 - [ ] Multi-clients par projet (Client1, Client1bis, Tier1, Tier1bis)
-- [ ] États du projet avec transitions : `RFQ > Offer > LOI > Development > SOP > Production > EoP`
+- [x] États du projet avec transitions : `RFQ > Offer > LOI > Development > SOP > Production > EoP`
 - [ ] Archivage documentaire (RFQ, offres, LOI, matrice de responsabilité, CSR, contrats)
 - [ ] Templates contractuels (standard, client, société)
 
@@ -55,14 +55,14 @@ Gestion complète du référentiel projet et de son cycle de vie.
 
 Structure de prix complète avec traçabilité et calculs automatiques.
 
-- [ ] Structure prix initiale : base (hors packaging, hors R&D) + amortissement R&D + coûts packaging = **prix SOP initial**
+- [x] Structure prix initiale : base (hors packaging, hors R&D) + amortissement R&D + coûts packaging = **prix SOP initial**
 - [ ] Table Incoterms normalisée (EXW, FCA, CIP...) avec surcoûts transport par destination
 - [ ] Prix par Incoterm : calcul automatique EXW → FCA → CIP selon la destination
 - [ ] Suivi mensuel des prix avec traçabilité de chaque modification
 - [ ] Composants dirigés (directed components) : suivi des composants imposés par le client avec coût et prix de vente
-- [ ] Productivité contractuelle : application automatique des baisses annuelles (ex : -1%/an x 5 ans)
+- [x] Productivité contractuelle : application automatique des baisses annuelles (ex : -1%/an x 5 ans)
 - [ ] **Price Walk** : décomposition visuelle du prix, du contrat initial au prix courant
-- [ ] Comparaison vs LOI : écart automatique entre prix SOP actualisé et prix LOI initial
+- [x] Comparaison vs LOI : écart automatique entre prix SOP actualisé et prix LOI initial
 - [ ] **Mode "What-if"** : simulation de l'impact d'une fiche Open sans valider, vue côte-à-côte
 - [ ] **Snapshots versionnés** : photo des prix à chaque PCICN envoyé, comparaison diff entre deux snapshots
 
@@ -70,14 +70,14 @@ Structure de prix complète avec traçabilité et calculs automatiques.
 
 Gestion des modifications techniques et de leur impact sur les prix.
 
-- [ ] Création de fiche modification : N° fiche, description technique, motivation, date
-- [ ] Impact prix : calcul global (EUR/pièce) décomposé en prix pièce + amortissement outillage (TEF) + packaging
-- [ ] Matrice d'application : quelle modification s'applique à quelles références (matrice Y/N)
-- [ ] Workflow de validation : `Open > Validated / Canceled`, signatures fournisseur et acheteur
+- [x] Création de fiche modification : N° fiche, description technique, motivation, date
+- [x] Impact prix : calcul global (EUR/pièce) décomposé en prix pièce + amortissement outillage (TEF) + packaging
+- [x] Matrice d'application : quelle modification s'applique à quelles références (matrice Y/N)
+- [x] Workflow de validation : `Open > Validated / Canceled`, signatures fournisseur et acheteur
 - [ ] Documents attachés aux fiches
-- [ ] Recalcul automatique des prix après validation d'une fiche
+- [x] Recalcul automatique des prix après validation d'une fiche
 - [ ] Amortissement des modifications : montant, volume, durée, coût/pièce automatique
-- [ ] Tooling/Cash : suivi des investissements outillage liés aux modifications
+- [x] Tooling/Cash : suivi des investissements outillage liés aux modifications
 - [ ] Génération PCICN : formulaire pré-rempli au format client
 
 ### Module 4 - Amortissement R&D
@@ -315,14 +315,14 @@ Le prix baisse brutalement à cette date. C'est un événement ponctuel, pas une
 
 #### Sprint 0 : Bootstrap technique (2 semaines)
 
-- [ ] Initialiser le projet Spring Boot 3.x / Java 21 / Maven + Spring Modulith
-- [ ] Créer le `docker-compose.yml` (PostgreSQL 16, pgAdmin)
-- [ ] Configurer Flyway, créer le schéma initial
-- [ ] Layout Thymeleaf + Bootstrap 5 + HTMX + Alpine.js (navbar, sidebar, page blanche)
-- [ ] **Moteur de pricing en pur Java d'abord** : implémenter les 4 règles comme des fonctions pures sans UI, sans JPA
-- [ ] **Test oracle Excel** : parser le fichier PF1 existant avec Apache POI → extraire les valeurs attendues → tests JUnit qui vérifient que le moteur produit les mêmes résultats
-- [ ] Seed Flyway réaliste : données complètes du PF1 de l'Excel (pas de données fictives)
-- [ ] Aucune authentification à ce stade (accès libre)
+- [x] Initialiser le projet Spring Boot 3.x / Java 21 / Maven + Spring Modulith
+- [x] Créer le `docker-compose.yml` (PostgreSQL 16, pgAdmin)
+- [x] Configurer Flyway, créer le schéma initial
+- [x] Layout Thymeleaf + Bootstrap 5 + HTMX + Alpine.js (navbar, sidebar, page blanche)
+- [x] **Moteur de pricing en pur Java d'abord** : implémenter les 4 règles comme des fonctions pures sans UI, sans JPA
+- [x] **Test oracle Excel** : parser le fichier PF1 existant avec Apache POI → extraire les valeurs attendues → tests JUnit qui vérifient que le moteur produit les mêmes résultats
+- [x] Seed Flyway réaliste : données complètes du PF1 de l'Excel (pas de données fictives)
+- [x] Aucune authentification à ce stade (accès libre)
 
 > **Livrable visuel** : L'application démarre, la page d'accueil s'affiche, la base tourne dans Docker. Les tests du moteur de pricing passent au vert et les résultats sont vérifiables contre l'Excel.
 
@@ -330,18 +330,18 @@ Le prix baisse brutalement à cette date. C'est un événement ponctuel, pas une
 
 Implémentation de la **Règle 1 — Prix SOP Initial**.
 
-- [ ] Entités `Project`, `ProductFamily`, `ProductReference` (CRUD minimal)
-- [ ] Entité `PriceBreakdown` : les 3 composantes du prix (base, R&D, packaging)
-- [ ] **Moteur de calcul** : `Prix SOP = base + R&D + packaging`
-- [ ] **Page projet** : vue tabulaire des familles et références avec colonnes :
+- [x] Entités `Project`, `ProductFamily`, `ProductReference` (CRUD minimal)
+- [x] Entité `PriceBreakdown` : les 3 composantes du prix (base, R&D, packaging)
+- [x] **Moteur de calcul** : `Prix SOP = base + R&D + packaging`
+- [x] **Page projet** : vue tabulaire des familles et références avec colonnes :
 
 | Famille | Référence | Prix de base | Amort. R&D | Packaging | **Prix SOP** |
 |---|---|---|---|---|---|
 | PF1 | PF1-1 | 10.00 | 4.50 | 0.50 | **15.00** |
 | PF1 | PF1-2 | 12.00 | 4.50 | 0.50 | **17.00** |
 
-- [ ] Saisie inline des prix (HTMX) : modifier un prix de base → le SOP se recalcule en temps réel
-- [ ] Seed Flyway avec données réalistes issues des Excel existants (PF1 complet)
+- [x] Saisie inline des prix (HTMX) : modifier un prix de base → le SOP se recalcule en temps réel
+- [x] Seed Flyway avec données réalistes issues des Excel existants (PF1 complet)
 
 > **Livrable visuel** : On voit le tableau de prix d'un projet, on modifie un prix de base, le SOP se recalcule live. On peut comparer avec le fichier Excel.
 
@@ -349,10 +349,10 @@ Implémentation de la **Règle 1 — Prix SOP Initial**.
 
 Implémentation de la **Règle 2 — Matrice d'Application & Recalcul**.
 
-- [ ] Entité `ModificationSheet` (F4) : numéro, description, statut (`Open` / `Validated` / `Canceled`)
-- [ ] Entité `ModificationImpact` : impact Part Price + impact TEF (amortissement outillage) + tooling + cash
-- [ ] Entité `ModificationApplication` : matrice modification × références, valeur `Y` ou `N` (ou vide)
-- [ ] **Page fiche de modification** : formulaire avec la matrice interactive (checkboxes par référence)
+- [x] Entité `ModificationSheet` (F4) : numéro, description, statut (`Open` / `Validated` / `Canceled`)
+- [x] Entité `ModificationImpact` : impact Part Price + impact TEF (amortissement outillage) + tooling + cash
+- [x] Entité `ModificationApplication` : matrice modification × références, valeur `Y` ou `N` (ou vide)
+- [x] **Page fiche de modification** : formulaire avec la matrice interactive (checkboxes par référence)
 
 | Fiche | Modification | Impact | PF1-1 | PF1-2 | PF1-3 | PF1-4 | PF1-5 | Statut |
 |---|---|---|---|---|---|---|---|---|
@@ -360,14 +360,14 @@ Implémentation de la **Règle 2 — Matrice d'Application & Recalcul**.
 | F012 | MAJ poids matières (PU) | 0.32 | Y | Y | Y | N | N | Validated |
 | F017 | MAJ prix PF1itchs | 0.48 | | Y | | Y | | Open |
 
-- [ ] **Moteur de recalcul** (coeur de l'application) :
+- [x] **Moteur de recalcul** (coeur de l'application) :
   - `Nouveau base = base initial + SUMIFS(Part Price, statut="Validated", matrice="Y")`
   - `Nouvel amort = amort initial + SUMIFS(TEF, statut="Validated", matrice="Y")`
   - `Prix SOP actualisé = Nouveau base + Nouvel amort + Packaging`
-- [ ] **Recalcul live** : changer le statut d'une fiche de `Open` à `Validated` → les prix se mettent à jour
-- [ ] Liste des fiches de modification avec badges de statut (vert=Validated, orange=Open, gris=Canceled)
-- [ ] **Colonne Écart vs LOI** sur le tableau de prix : `Prix SOP actualisé - Prix SOP initial`
-- [ ] Tests unitaires du moteur de recalcul avec les données PF1 de l'Excel (résultats vérifiables)
+- [x] **Recalcul live** : changer le statut d'une fiche de `Open` à `Validated` → les prix se mettent à jour
+- [x] Liste des fiches de modification avec badges de statut (vert=Validated, orange=Open, gris=Canceled)
+- [x] **Colonne Écart vs LOI** sur le tableau de prix : `Prix SOP actualisé - Prix SOP initial`
+- [x] Tests unitaires du moteur de recalcul avec les données PF1 de l'Excel (résultats vérifiables)
 
 > **Livrable visuel** : On crée une fiche F4, on coche les références impactées dans la matrice, on passe en "Validated" → les prix du tableau se mettent à jour automatiquement. Les fiches "Open" et "Canceled" n'impactent rien. C'est la démo clé du produit.
 
@@ -384,9 +384,9 @@ Implémentation de la **Règle 2 — Matrice d'Application & Recalcul**.
 Implémentation de la **Règle 3 — Productivité Contractuelle**.
 
 - [ ] Entité `Productivity` : taux (ex : -1%, -2%), durée (nb années), date de début
-- [ ] **Moteur de productivité** : `(prix - amort - packaging) × (1 + taux) + amort + packaging`
-- [ ] La productivité ne s'applique **que sur le prix pièce nu**, pas sur les rondelles ni le packaging
-- [ ] **Projection annuelle** : tableau SOP, SOP+1, SOP+2... montrant les prix futurs par référence
+- [x] **Moteur de productivité** : `(prix - amort - packaging) × (1 + taux) + amort + packaging`
+- [x] La productivité ne s'applique **que sur le prix pièce nu**, pas sur les rondelles ni le packaging
+- [x] **Projection annuelle** : tableau SOP, SOP+1, SOP+2... montrant les prix futurs par référence
 
 | Année | PF1-1 | PF1-2 | PF1-3 | PF1-4 | PF1-5 |
 |---|---|---|---|---|---|
@@ -408,9 +408,9 @@ Implémentation de la **Règle 3 — Productivité Contractuelle**.
 
 Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement multi-Incoterm.
 
-- [ ] **Tombée des rondelles R&D** : à la date d'échéance, `prix = prix courant - amortissement R&D`
-- [ ] Configuration de la date de tombée par amortissement (ex : SOP+7)
-- [ ] Visualisation dans la timeline : le prix chute à la date de tombée (ligne rouge sur le graphique)
+- [x] **Tombée des rondelles R&D** : à la date d'échéance, `prix = prix courant - amortissement R&D`
+- [x] Configuration de la date de tombée par amortissement (ex : SOP+7)
+- [x] Visualisation dans la projection : le prix chute à la date de tombée (ligne `drop-row`)
 - [ ] Table `Incoterm` : seed des données standards (EXW, FCA, CIP...)
 - [ ] Entité `Customer` et `CustomerReference` : N références client par produit
 - [ ] Surcoûts transport par destination et par Incoterm
@@ -423,7 +423,7 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 | PF6-1 | 2.87 | 3.39 | 3.55 |
 
 - [ ] **Price Walk** : graphique en cascade (Chart.js) du prix initial au prix courant
-- [ ] **Comparaison vs LOI** : colonne écart automatique SOP actualisé vs LOI initial
+- [x] **Comparaison vs LOI** : colonne écart automatique SOP actualisé vs LOI initial
 
 > **Livrable visuel** : Le tableau complet ressemble à l'Excel. Le Price Walk montre visuellement la décomposition. La tombée des rondelles est visible dans la projection temporelle. On peut vérifier chaque valeur avec le fichier Excel original.
 
@@ -692,19 +692,19 @@ smartkam/
 
 Implémente les **Règles Métier 1 et 2**. À la fin de ce jalon, on peut démontrer :
 
-- [ ] Tableau de prix avec décomposition (base + R&D + packaging) → **Règle 1**
-- [ ] Fiche de modification F4 avec matrice d'application Y/N → **Règle 2**
-- [ ] **Recalcul automatique** : seules les fiches `Validated` + `Y` impactent le prix ← coeur du produit
-- [ ] Écart vs prix initial affiché sur chaque référence
-- [ ] Résultats vérifiables avec le fichier Excel PF1 existant
+- [x] Tableau de prix avec décomposition (base + R&D + packaging) → **Règle 1**
+- [x] Fiche de modification F4 avec matrice d'application Y/N → **Règle 2**
+- [x] **Recalcul automatique** : seules les fiches `Validated` + `Y` impactent le prix ← coeur du produit
+- [x] Écart vs prix initial affiché sur chaque référence
+- [x] Résultats vérifiables avec le fichier Excel PF1 existant
 
 ### MVP 1 — Moteur de Prix Complet (Sprints 3-4)
 
 Implémente les **Règles Métier 3 et 4**. Le moteur de pricing est complet :
 
-- [ ] Productivité sur prix pièce nu uniquement (exclut amort + packaging) → **Règle 3**
-- [ ] Projection annuelle (SOP, SOP+1, SOP+2...) avec timeline mensuelle
-- [ ] Tombée des rondelles R&D à date d'échéance → **Règle 4**
+- [x] Productivité sur prix pièce nu uniquement (exclut amort + packaging) → **Règle 3**
+- [x] Projection annuelle (SOP, SOP+1, SOP+2...) avec timeline mensuelle
+- [x] Tombée des rondelles R&D à date d'échéance → **Règle 4**
 - [ ] Prix par Incoterm (EXW, FCA, CIP) avec colonnes multi-clients
 - [ ] Price Walk visuel (graphique en cascade)
 
