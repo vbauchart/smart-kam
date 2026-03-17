@@ -5,106 +5,158 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container-fluid mt-4">
+<main class="container-fluid p-0">
 
-    <div class="row mb-4">
-        <div class="col">
-            <h1 class="h3 fw-bold text-primary">Smart KAM</h1>
-            <p class="text-muted">
-                Key Account Management — Industrie Automobile
-            </p>
+    <!-- Hero header -->
+    <div class="page-header px-4 py-4">
+        <h1 class="h4 fw-bold text-white mb-1">Smart KAM</h1>
+        <p class="mb-0" style="color:rgba(255,255,255,.6);font-size:13px;">
+            Key Account Management &mdash; Industrie Automobile
+        </p>
+    </div>
+
+    <!-- Info banner -->
+    <div class="info-banner">
+        Moteur de pricing 4 règles — modifiez un prix ou un statut de fiche pour un recalcul instantané.
+    </div>
+
+    <div class="py-4 px-4">
+
+        <!-- KPI tiles -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-sm-6 col-md-3">
+                <a th:href="@{/projects}" class="text-decoration-none">
+                    <div class="kpi-card kpi-card--link">
+                        <div class="kpi-card-accent" style="background:var(--sec-initial);"></div>
+                        <div class="kpi-card-body">
+                            <div class="kpi-card-num" th:text="${projectCount}">0</div>
+                            <div class="kpi-card-label">Projets actifs</div>
+                        </div>
+                        <div class="kpi-card-footer" style="color:var(--sec-initial);">
+                            Voir les projets &rarr;
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-accent" style="background:var(--sec-updated);"></div>
+                    <div class="kpi-card-body">
+                        <div class="kpi-card-num" th:text="${familyCount}">0</div>
+                        <div class="kpi-card-label">Familles produit</div>
+                    </div>
+                    <div class="kpi-card-footer" style="color:var(--sec-updated);">
+                        Références par famille
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-accent" style="background:var(--sec-modif);"></div>
+                    <div class="kpi-card-body">
+                        <div class="kpi-card-num" th:text="${sheetCount}">0</div>
+                        <div class="kpi-card-label">Fiches modification</div>
+                    </div>
+                    <div class="kpi-card-footer" style="color:var(--sec-modif);">
+                        F4 / PCICN
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-6 col-md-3">
+                <div class="kpi-card">
+                    <div class="kpi-card-accent" style="background:var(--sec-proj);"></div>
+                    <div class="kpi-card-body">
+                        <div class="kpi-card-num" th:text="${openSheetCount}">0</div>
+                        <div class="kpi-card-label">Fiches en attente</div>
+                    </div>
+                    <div class="kpi-card-footer" style="color:var(--sec-proj);">
+                        Statut Open &mdash; à valider
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
 
-    <!-- Sprint banner -->
-    <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
-        <strong class="me-2">Sprint 1</strong>
-        Tableau de prix opérationnel — saisie inline HTMX, recalcul SOP en temps réel.
-    </div>
+        <!-- Bottom section: rules + stack -->
+        <div class="row g-3">
 
-    <!-- Quick stats -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <a th:href="@{/projects}" class="text-decoration-none">
-                <div class="card border-primary h-100 card-hover">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="text-muted small">Projets actifs</div>
-                                <div class="fs-4 fw-bold" th:text="${projectCount}">—</div>
+            <!-- Business rules -->
+            <div class="col-md-8">
+                <p class="home-section-title">Règles de pricing</p>
+                <div class="row g-2">
+
+                    <div class="col-md-6">
+                        <div class="rule-card" style="border-left-color:var(--sec-initial);">
+                            <div class="rule-num" style="color:var(--sec-initial);">① Contrat Initial</div>
+                            <div class="rule-desc">
+                                Prix SOP Initial = Base + Amort. R&amp;D + Packaging &nbsp;(F1)
                             </div>
-                            <span class="fs-2 text-primary">📁</span>
                         </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small">Familles produit</div>
-                            <div class="fs-4 fw-bold" th:text="${familyCount}">—</div>
-                        </div>
-                        <span class="fs-2 text-success">📦</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small">Fiches modification</div>
-                            <div class="fs-4 fw-bold" th:text="${sheetCount}">—</div>
-                        </div>
-                        <span class="fs-2 text-warning">📝</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small">Fiches en attente</div>
-                            <div class="fs-4 fw-bold" th:text="${openSheetCount}">—</div>
-                        </div>
-                        <span class="fs-2 text-danger">⏳</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Upcoming sprints -->
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header fw-semibold">Sprint 1 — Tableau de prix ✅</div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        <li class="mb-2">✅ Entités JPA + repositories (Project, Family, Reference, PriceBreakdown)</li>
-                        <li class="mb-2">✅ Page liste projets + page détail avec tableau de prix</li>
-                        <li class="mb-2">✅ Saisie inline HTMX — prix de base modifiable</li>
-                        <li class="mb-2">✅ Recalcul SOP live sans rechargement de page</li>
-                    </ul>
+                    <div class="col-md-6">
+                        <div class="rule-card" style="border-left-color:var(--sec-modif);">
+                            <div class="rule-num" style="color:var(--sec-modif);">② Fiches de Modification</div>
+                            <div class="rule-desc">
+                                Matrice d'application par référence — statuts Validated / Open / Canceled &nbsp;(F4)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="rule-card" style="border-left-color:var(--sec-updated);">
+                            <div class="rule-num" style="color:var(--sec-updated);">③ Prix SOP Actualisé</div>
+                            <div class="rule-desc">
+                                Base actualisée par SUMIFS des modifications validées &nbsp;(F2)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="rule-card" style="border-left-color:var(--sec-proj);">
+                            <div class="rule-num" style="color:var(--sec-proj);">④ Projection Annuelle</div>
+                            <div class="rule-desc">
+                                Productivité &minus;1&thinsp;%&thinsp;/&thinsp;an &times; 4 ans
+                                &nbsp;&middot;&nbsp;
+                                Tombée des rondelles R&amp;D à SOP+7
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-light">
-                <div class="card-header fw-semibold">Stack technique</div>
-                <div class="card-body small">
-                    <div><strong>Backend</strong> Spring Boot 3.3 / Java 21</div>
-                    <div><strong>Architecture</strong> Spring Modulith</div>
-                    <div><strong>BDD</strong> PostgreSQL 16 + Flyway</div>
-                    <div><strong>Frontend</strong> Thymeleaf + HTMX + Alpine.js</div>
+
+            <!-- Tech stack -->
+            <div class="col-md-4">
+                <p class="home-section-title">Stack technique</p>
+                <div class="stack-card">
+                    <div class="stack-row">
+                        <span class="stack-key">Backend</span>
+                        <span class="stack-val">Spring Boot 3.3 &middot; Java 21</span>
+                    </div>
+                    <div class="stack-row">
+                        <span class="stack-key">Architecture</span>
+                        <span class="stack-val">Spring Modulith</span>
+                    </div>
+                    <div class="stack-row">
+                        <span class="stack-key">Base de données</span>
+                        <span class="stack-val">PostgreSQL 16 &middot; Flyway</span>
+                    </div>
+                    <div class="stack-row">
+                        <span class="stack-key">Frontend</span>
+                        <span class="stack-val">Thymeleaf &middot; HTMX &middot; Alpine.js</span>
+                    </div>
+                    <div class="stack-row stack-row--last">
+                        <span class="stack-key">Tests</span>
+                        <span class="stack-val">JUnit 5 &middot; Testcontainers</span>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 
