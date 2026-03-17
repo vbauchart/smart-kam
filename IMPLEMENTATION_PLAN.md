@@ -63,6 +63,8 @@ Structure de prix complète avec traçabilité et calculs automatiques.
 - [ ] Productivité contractuelle : application automatique des baisses annuelles (ex : -1%/an x 5 ans)
 - [ ] **Price Walk** : décomposition visuelle du prix, du contrat initial au prix courant
 - [ ] Comparaison vs LOI : écart automatique entre prix SOP actualisé et prix LOI initial
+- [ ] **Mode "What-if"** : simulation de l'impact d'une fiche Open sans valider, vue côte-à-côte
+- [ ] **Snapshots versionnés** : photo des prix à chaque PCICN envoyé, comparaison diff entre deux snapshots
 
 ### Module 3 - Fiches de Modification (F4/PCICN)
 
@@ -157,11 +159,12 @@ Tableaux de bord et consolidation.
 
 ### Module 12 - Signature & Export
 
-Signature électronique et génération de documents.
+Signature électronique, génération et import de documents.
 
 - [ ] Signature électronique PDF
 - [ ] Export email client avec pièces jointes
 - [ ] Génération de documents standards
+- [ ] **Import Excel initial** : wizard d'import depuis `.xlsm` existant pour bootstrapper un projet
 
 ---
 
@@ -312,14 +315,16 @@ Le prix baisse brutalement à cette date. C'est un événement ponctuel, pas une
 
 #### Sprint 0 : Bootstrap technique (2 semaines)
 
-- [ ] Initialiser le projet Spring Boot 3.x / Java 21 / Maven multi-module
+- [ ] Initialiser le projet Spring Boot 3.x / Java 21 / Maven + Spring Modulith
 - [ ] Créer le `docker-compose.yml` (PostgreSQL 16, pgAdmin)
 - [ ] Configurer Flyway, créer le schéma initial
-- [ ] Layout Thymeleaf + Bootstrap 5 + HTMX (navbar, sidebar, page blanche)
-- [ ] Données de seed : 1 projet fictif, 1 famille, quelques références, 1 client
+- [ ] Layout Thymeleaf + Bootstrap 5 + HTMX + Alpine.js (navbar, sidebar, page blanche)
+- [ ] **Moteur de pricing en pur Java d'abord** : implémenter les 4 règles comme des fonctions pures sans UI, sans JPA
+- [ ] **Test oracle Excel** : parser le fichier PF1 existant avec Apache POI → extraire les valeurs attendues → tests JUnit qui vérifient que le moteur produit les mêmes résultats
+- [ ] Seed Flyway réaliste : données complètes du PF1 de l'Excel (pas de données fictives)
 - [ ] Aucune authentification à ce stade (accès libre)
 
-> **Livrable visuel** : L'application démarre, la page d'accueil s'affiche, la base tourne dans Docker.
+> **Livrable visuel** : L'application démarre, la page d'accueil s'affiche, la base tourne dans Docker. Les tests du moteur de pricing passent au vert et les résultats sont vérifiables contre l'Excel.
 
 #### Sprint 1 : Tableau de prix & Règle 1 (2 semaines)
 
@@ -392,8 +397,12 @@ Implémentation de la **Règle 3 — Productivité Contractuelle**.
 - [ ] **Timeline mensuelle** : navigation mois par mois avec les modifications appliquées à chaque date
 - [ ] Possibilité d'insérer une modification de prix à une date précise (ex : "MAJ matières en mars 2015")
 - [ ] Colonne de simulation : comparaison productivité appliquée sur totalité du prix vs sur prix nu uniquement
+- [ ] **Mode "What-if" (simulation)** : le KAM peut tester l'impact d'une modification avant de la valider
+  - [ ] Bouton "Simuler" sur une fiche `Open` : affiche les prix recalculés en surbrillance sans toucher aux prix réels
+  - [ ] Comparaison côte-à-côte : prix actuels vs prix si la fiche était validée
+  - [ ] Annulation de la simulation sans aucun effet sur les données
 
-> **Livrable visuel** : On paramètre "-1%/an pendant 4 ans", et le tableau projette les prix sur toute la durée. On voit la différence entre l'application correcte (sur prix nu) et la simulation naïve (sur tout le prix).
+> **Livrable visuel** : On paramètre "-1%/an pendant 4 ans", et le tableau projette les prix sur toute la durée. On voit la différence entre l'application correcte (sur prix nu) et la simulation naïve (sur tout le prix). On simule l'impact d'une fiche Open avant de la valider.
 
 #### Sprint 4 : Tombée des rondelles, Incoterms, Price Walk — Règle 4 (2 semaines)
 
@@ -462,8 +471,12 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 - [ ] Export Excel du tableau de suivi des prix (Apache POI) — format identique à l'Excel existant
 - [ ] Export de la liste des fiches de modification avec statuts et impacts
 - [ ] **Boutons d'export** sur les pages projet et modifications
+- [ ] **Import Excel initial** : le KAM peut importer son fichier `.xlsm` existant pour bootstrapper un projet
+  - [ ] Parsing Apache POI des feuilles PF1..PFn : prix de base, R&D, packaging, modifications, statuts
+  - [ ] Wizard de mapping : colonnes Excel → champs applicatifs, avec prévisualisation avant import
+  - [ ] Rapport d'import : lignes ignorées, erreurs de format, doublons
 
-> **Livrable visuel** : Bouton "Générer PCICN" → PDF téléchargé. Bouton "Export Excel" → fichier identique aux anciens tableaux.
+> **Livrable visuel** : Bouton "Générer PCICN" → PDF téléchargé. Bouton "Export Excel" → fichier identique aux anciens tableaux. Bouton "Importer depuis Excel" → les données d'un fichier existant sont chargées en quelques secondes.
 
 #### Sprint 8 : Matières premières & DCL (2 semaines)
 
@@ -483,15 +496,19 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 > **Objectif** : Donner une vue d'ensemble aux managers et KAM.
 > Premiers tableaux de bord et consolidation.
 
-#### Sprint 9 : Dashboard projet & santé du compte (2 semaines)
+#### Sprint 9 : Dashboard projet, santé du compte & snapshots prix (2 semaines)
 
 - [ ] **Page Dashboard** : vue d'ensemble par projet (marge, écart LOI, nb modifications, statut)
 - [ ] Indicateurs clés : CA estimé, marge, écart budget
 - [ ] Graphiques interactifs (Chart.js/ApexCharts) : évolution des prix, répartition par famille
 - [ ] Consolidation multi-projets par client
 - [ ] Alertes visuelles : prix NOK, PO manquants, fiches F4 en attente
+- [ ] **Snapshots versionnés des prix** : avant tout envoi de PCICN, le système fige l'état complet des prix
+  - [ ] Entité `PriceSnapshot` : photo datée de tous les prix d'un projet à un instant T
+  - [ ] **Comparaison entre deux snapshots** : vue diff qui montre exactement ce qui a bougé entre deux envois
+  - [ ] Historique des snapshots sur la page projet (timeline des PCICN envoyés)
 
-> **Livrable visuel** : Page dashboard avec graphiques et indicateurs de santé. Vue consolidée par client.
+> **Livrable visuel** : Page dashboard avec graphiques et indicateurs de santé. Vue consolidée par client. Historique visuel des snapshots de prix avec diff entre deux versions.
 
 #### Sprint 10 : Reporting & exports avancés (2 semaines)
 
@@ -622,28 +639,41 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 | Couche | Technologie | Justification |
 |---|---|---|
 | **Backend** | Spring Boot 3.x, Java 21 | Écosystème mature, support LTS, records Java |
-| **Persistence** | Spring Data JPA / Hibernate, PostgreSQL 16 | ORM standard, JSONB pour données flexibles |
+| **Architecture** | Spring Modulith | Frontières modulaires avec vérification runtime, sans complexité multi-module Maven |
+| **Persistence CRUD** | Spring Data JPA / Hibernate, PostgreSQL 16 | ORM standard, JSONB pour données flexibles |
+| **Persistence Pricing** | jOOQ | Requêtes SUMIFS/filtering complexes plus lisibles et performantes en SQL typé |
 | **Dev local** | Docker Compose (PostgreSQL, pgAdmin) | Environnement reproductible, zéro install locale |
 | **Migrations** | Flyway | Versioning du schéma, reproductibilité |
 | **Frontend** | Thymeleaf + HTMX + Bootstrap 5 | Server-side rendering avec interactivité AJAX |
+| **Frontend micro-interactions** | Alpine.js | Toggles, dropdowns, calculs locaux côté client — complémentaire à HTMX, zéro build |
 | **Sécurité** | Spring Security | Rôles (KAM, Manager, Finance, Admin), CSRF, sessions |
-| **Documents** | Apache POI (Excel), iText / JasperReports (PDF) | Génération Excel et PDF natifs |
+| **Documents** | Apache POI (Excel import/export), iText / JasperReports (PDF) | Génération ET import Excel, PDF natifs |
 | **Graphiques** | Chart.js ou ApexCharts | Graphiques interactifs (Price Walk, dashboards) |
 | **Email** | Spring Mail | Notifications et envois automatiques |
 | **Tests** | JUnit 5, Testcontainers, Mockito | Tests unitaires, intégration avec PostgreSQL réel |
-| **Build** | Maven | Standard Spring Boot, multi-module simple et fiable |
+| **Test oracle** | JUnit 5 + Apache POI | Parser le fichier Excel PF1 → vérifier que le moteur produit les mêmes valeurs |
+| **Build** | Maven | Standard Spring Boot, simple et fiable |
 | **CI/CD** | GitHub Actions | Intégration continue, déploiement automatisé |
 
-### Architecture Multi-Module
+### Architecture Spring Modulith
+
+Un seul module Maven, des frontières modulaires vérifiées au runtime par Spring Modulith :
 
 ```
 torchebald/
-├── torchebald-domain/        # Entités JPA, enums, value objects
-├── torchebald-service/       # Logique métier, calculs prix, services
-├── torchebald-web/           # Contrôleurs, Thymeleaf, HTMX, sécurité
-├── torchebald-infra/         # Configuration, Flyway, intégrations externes
-└── pom.xml                   # POM parent
+└── src/main/java/
+    └── com.torchebald/
+        ├── pricing/          # Moteur de pricing : règles 1-4, SUMIFS, projections
+        │     └── (API publique exposée aux autres modules)
+        ├── project/          # Projets, familles, références, workflow états
+        ├── modification/     # Fiches F4/PCICN, matrice d'application
+        ├── document/         # Génération PDF, export Excel, import Excel
+        ├── dashboard/        # Reporting, snapshots, agrégats
+        ├── logistics/        # Usines, packaging, capacitaire
+        └── shared/           # Value objects, entités partagées, Flyway
 ```
+
+> Spring Modulith vérifie au démarrage que les modules ne s'appellent pas en dehors de leurs APIs publiques — sans la complexité d'un build multi-modules Maven.
 
 ### Rôles Utilisateurs
 
