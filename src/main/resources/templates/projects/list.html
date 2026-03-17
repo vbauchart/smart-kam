@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Projets')}"></head>
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold text-primary mb-0">Projets</h1>
+            <p class="text-muted small mb-0">Liste des projets clients</p>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4 col-lg-3" th:each="project : ${projects}">
+            <a th:href="@{/projects/{id}(id=${project.id})}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm border-0 card-hover">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold text-dark mb-0" th:text="${project.name}">Projet</h5>
+                            <span class="badge ms-2"
+                                  th:classappend="${project.status.name() == 'PRODUCTION'} ? 'bg-success' :
+                                                  (${project.status.name() == 'RFQ'} ? 'bg-secondary' :
+                                                  (${project.status.name() == 'EOP'} ? 'bg-dark' : 'bg-primary'))"
+                                  th:text="${project.status}">PRODUCTION</span>
+                        </div>
+                        <p class="card-text text-muted small" th:text="${project.description}">Description</p>
+                        <div class="text-muted small" th:if="${project.sopDate != null}">
+                            <span class="me-1">📅</span>
+                            SOP : <span th:text="${#temporals.format(project.sopDate, 'dd/MM/yyyy')}"></span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0">
+                        <span class="btn btn-outline-primary btn-sm w-100">Voir les prix →</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-12" th:if="${#lists.isEmpty(projects)}">
+            <div class="alert alert-info">Aucun projet trouvé.</div>
+        </div>
+    </div>
+
+</main>
+
+<th:block th:replace="~{layout :: scripts}"></th:block>
+</body>
+</html>

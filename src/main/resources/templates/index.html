@@ -17,25 +17,27 @@
     </div>
 
     <!-- Sprint banner -->
-    <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
-        <strong class="me-2">Sprint 0</strong>
-        Bootstrap technique — moteur de pricing opérationnel, base de données initialisée.
+    <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
+        <strong class="me-2">Sprint 1</strong>
+        Tableau de prix opérationnel — saisie inline HTMX, recalcul SOP en temps réel.
     </div>
 
     <!-- Quick stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-primary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-muted small">Projets actifs</div>
-                            <div class="fs-4 fw-bold" th:text="${projectCount}">—</div>
+            <a th:href="@{/projects}" class="text-decoration-none">
+                <div class="card border-primary h-100 card-hover">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="text-muted small">Projets actifs</div>
+                                <div class="fs-4 fw-bold" th:text="${projectCount}">—</div>
+                            </div>
+                            <span class="fs-2 text-primary">📁</span>
                         </div>
-                        <span class="fs-2 text-primary">📁</span>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
             <div class="card border-success">
@@ -82,13 +84,13 @@
     <div class="row">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header fw-semibold">Prochaine étape — Sprint 1</div>
+                <div class="card-header fw-semibold">Sprint 1 — Tableau de prix ✅</div>
                 <div class="card-body">
                     <ul class="list-unstyled mb-0">
-                        <li class="mb-2">✅ Tableau de prix avec décomposition (base + R&D + packaging)</li>
-                        <li class="mb-2">✅ Moteur de pricing Règle 1 : SOP = base + R&D + packaging</li>
-                        <li class="mb-2">⬜ Page projet avec saisie inline HTMX</li>
-                        <li class="mb-2">⬜ Recalcul live au changement d'un prix de base</li>
+                        <li class="mb-2">✅ Entités JPA + repositories (Project, Family, Reference, PriceBreakdown)</li>
+                        <li class="mb-2">✅ Page liste projets + page détail avec tableau de prix</li>
+                        <li class="mb-2">✅ Saisie inline HTMX — prix de base modifiable</li>
+                        <li class="mb-2">✅ Recalcul SOP live sans rechargement de page</li>
                     </ul>
                 </div>
             </div>

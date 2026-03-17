@@ -35,9 +35,11 @@
     max-width: 100%;
 }
 
-/* HTMX loading indicator */
-.htmx-indicator { display: none; }
-.htmx-request .htmx-indicator { display: inline-block; }
+/* HTMX loading indicator — input dims while waiting for response */
+input.htmx-request {
+    opacity: 0.5;
+    cursor: wait;
+}
 
 /* Inline editable cells */
 .cell-editable {
@@ -53,3 +55,24 @@
 .delta-positive { color: #16a34a; font-weight: 600; }
 .delta-negative { color: #dc2626; font-weight: 600; }
 .delta-zero     { color: #6b7280; }
+
+/* Clickable card (project list) */
+.card-hover {
+    transition: box-shadow 0.15s, transform 0.1s;
+}
+.card-hover:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.12) !important;
+    transform: translateY(-1px);
+}
+
+/* Inline price input — compact */
+.price-input {
+    width: 90px;
+    display: inline-block;
+}
+
+/* Row dims during HTMX request */
+tr.htmx-request td {
+    opacity: 0.5;
+    transition: opacity 0.1s;
+}

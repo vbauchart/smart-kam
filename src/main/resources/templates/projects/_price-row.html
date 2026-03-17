@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragment: price-row(ref, pb, projectId)
+  Used:
+    - from detail.html via th:replace (parameters passed explicitly)
+    - from ProjectController HTMX endpoint (parameters from model attributes)
+-->
+<tr th:fragment="price-row(ref, pb, projectId)"
+    th:id="'row-ref-' + ${ref.id}"
+    x-data="{ editing: false }">
+
+    <td class="ps-3 text-muted small fw-medium" th:text="${ref.family.code}">PF1</td>
+
+    <td class="fw-medium" th:text="${ref.refInternal}">PF1-1</td>
+
+    <td class="text-muted small" th:text="${ref.description}">Description</td>
+
+    <!-- Base price — click to edit inline -->
+    <td class="text-end">
+        <!-- Display span -->
+        <span x-show="!editing"
+              @click="editing = true; $nextTick(() => $refs.input.select())"
+              class="cell-editable px-2 py-1 rounded"
+              th:text="${#numbers.formatDecimal(pb.basePrice, 1, 'NONE', 2, 'POINT')}">10.00</span>
+
+        <!-- Edit input — submitted via HTMX on blur/Enter -->
+        <input x-show="editing"
+               x-ref="input"
+               type="number"
+               step="0.0001"
+               min="0"
+               class="form-control form-control-sm text-end"
+               style="max-width: 100px; display: inline-block;"
+               th:value="${pb.basePrice}"
+               name="base_price"
+               th:attr="hx-post=@{/projects/{pid}/references/{rid}/base-price(pid=${projectId},rid=${ref.id})}"
+               hx-include="this"
+               hx-target="closest tr"
+               hx-swap="outerHTML"
+               hx-trigger="blur"
+               @keydown.enter.prevent="$el.blur()"
+               @keydown.escape.prevent="editing = false">
+
+    </td>
+
+    <td class="text-end text-muted"
+        th:text="${#numbers.formatDecimal(pb.rdAmortization, 1, 'NONE', 2, 'POINT')}">4.50</td>
+
+    <td class="text-end text-muted"
+        th:text="${#numbers.formatDecimal(pb.packaging, 1, 'NONE', 2, 'POINT')}">0.50</td>
+
+    <td class="text-end pe-3 fw-bold text-primary"
+        th:text="${#numbers.formatDecimal(pb.sopInitial, 1, 'NONE', 2, 'POINT')}">15.00</td>
+
+</tr>
+
+</body>
+</html>

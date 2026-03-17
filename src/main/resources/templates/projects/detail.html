@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head(${project.name})}"></head>
+<body>
+
+<nav th:replace="~{layout :: navbar}"></nav>
+
+<main class="container-fluid mt-4">
+
+    <!-- Header / breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a th:href="@{/projects}">Projets</a></li>
+                    <li class="breadcrumb-item active" th:text="${project.name}">Projet</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold text-primary mb-0" th:text="${project.name}">Projet</h1>
+            <p class="text-muted small mb-0" th:text="${project.description}">Description</p>
+        </div>
+        <div class="text-end">
+            <span class="badge fs-6"
+                  th:classappend="${project.status.name() == 'PRODUCTION'} ? 'bg-success' :
+                                  (${project.status.name() == 'EOP'} ? 'bg-dark' : 'bg-primary')"
+                  th:text="${project.status}">STATUS</span>
+            <div class="text-muted small mt-1" th:if="${project.sopDate != null}">
+                SOP : <span th:text="${#temporals.format(project.sopDate, 'dd/MM/yyyy')}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Price table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-bottom fw-semibold">
+            Tableau de prix — Règle 1 : SOP = Base + R&amp;D + Packaging
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="price-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width:10%">Famille</th>
+                            <th style="width:12%">Référence</th>
+                            <th>Description</th>
+                            <th class="text-end" style="width:12%">
+                                Base (€)
+                                <span class="text-muted fw-normal small d-block" style="font-size:0.7rem">
+                                    cliquer pour modifier
+                                </span>
+                            </th>
+                            <th class="text-end" style="width:10%">R&amp;D (€)</th>
+                            <th class="text-end" style="width:10%">Pkg (€)</th>
+                            <th class="text-end pe-3 fw-bold text-primary" style="width:10%">SOP (€)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <th:block th:each="family : ${families}">
+                            <th:block th:each="ref : ${family.references}">
+                                <tr th:replace="~{projects/_price-row :: price-row(${ref}, ${ref.priceBreakdown}, ${project.id})}"></tr>
+                            </th:block>
+                        </th:block>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-3">
+        <em>💡 Cliquez sur un prix de base pour le modifier inline. Le SOP se recalcule automatiquement.</em>
+    </p>
+
+</main>
+
+<th:block th:replace="~{layout :: scripts}"></th:block>
+</body>
+</html>
