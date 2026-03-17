@@ -1,4 +1,4 @@
-# Torchebald - Smart KAM : Plan d'Implémentation
+# Smart KAM : Plan d'Implémentation
 
 > Application de Key Account Management pour l'industrie automobile.
 > Gestion du cycle de vie complet des projets de vente de pièces sur mesure aux constructeurs (OEM/Tier1).
@@ -18,7 +18,7 @@
 
 ## 1. Synthèse du Projet
 
-**Torchebald (Smart KAM)** est une application de Key Account Management destinée aux commerciaux de l'industrie automobile. Elle couvre le cycle de vie complet d'un projet commercial :
+**Smart KAM** est une application de Key Account Management destinée aux commerciaux de l'industrie automobile. Elle couvre le cycle de vie complet d'un projet commercial :
 
 ```
 RFQ → Offre → LOI → Développement → SOP → Production → EoP
@@ -660,9 +660,9 @@ Implémentation de la **Règle 4 — Tombée des Rondelles** + enrichissement mu
 Un seul module Maven, des frontières modulaires vérifiées au runtime par Spring Modulith :
 
 ```
-torchebald/
+smartkam/
 └── src/main/java/
-    └── com.torchebald/
+    └── com.smartkam/
         ├── pricing/          # Moteur de pricing : règles 1-4, SUMIFS, projections
         │     └── (API publique exposée aux autres modules)
         ├── project/          # Projets, familles, références, workflow états
