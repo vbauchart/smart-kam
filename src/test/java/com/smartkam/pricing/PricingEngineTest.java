@@ -69,17 +69,17 @@ class PricingEngineTest {
         private List<ModificationImpact> pf1_1_impacts() {
             return List.of(
                     // F005 VALIDATED but NOT applies for PF1-1
-                    ModificationImpact.of(bd("-1.2"), bd("0"),    false, true),
+                    ModificationImpact.of(bd("-1.2"), bd("0"),    bd("0"), false, true),
                     // F012-PU VALIDATED, applies
-                    ModificationImpact.of(bd("0.32"), bd("0"),    true,  true),
+                    ModificationImpact.of(bd("0.32"), bd("0"),    bd("0"), true,  true),
                     // F012-Cuir VALIDATED but NOT applies for PF1-1
-                    ModificationImpact.of(bd("0.48"), bd("0"),    false, true),
+                    ModificationImpact.of(bd("0.48"), bd("0"),    bd("0"), false, true),
                     // F015 VALIDATED, applies
-                    ModificationImpact.of(bd("0.03"), bd("0.09"), true,  true),
+                    ModificationImpact.of(bd("0.03"), bd("0.09"), bd("0"), true,  true),
                     // F017 OPEN — must be ignored
-                    ModificationImpact.of(bd("0.477"), bd("0"),   true,  false),
+                    ModificationImpact.of(bd("0.477"), bd("0"),   bd("0"), true,  false),
                     // F018 OPEN — must be ignored (not applicable anyway)
-                    ModificationImpact.of(bd("0.045"), bd("0.48"),false, false)
+                    ModificationImpact.of(bd("0.045"), bd("0.48"),bd("0"), false, false)
             );
         }
 
@@ -117,12 +117,12 @@ class PricingEngineTest {
         @DisplayName("PF1-4 : base mise à jour = 20 - 1.2 + 0.48 + 0.03 = 19.31")
         void updatedBase_pf1_4() {
             List<ModificationImpact> impacts = List.of(
-                    ModificationImpact.of(bd("-1.2"),  bd("0"),    true,  true),   // F005
-                    ModificationImpact.of(bd("0.32"),  bd("0"),    false, true),   // F012-PU N
-                    ModificationImpact.of(bd("0.48"),  bd("0"),    true,  true),   // F012-Cuir
-                    ModificationImpact.of(bd("0.03"),  bd("0.09"), true,  true),   // F015
-                    ModificationImpact.of(bd("0.477"), bd("0"),    true,  false),  // F017 OPEN
-                    ModificationImpact.of(bd("0.045"), bd("0.48"), true,  false)   // F018 OPEN
+                    ModificationImpact.of(bd("-1.2"),  bd("0"),    bd("0"), true,  true),   // F005
+                    ModificationImpact.of(bd("0.32"),  bd("0"),    bd("0"), false, true),   // F012-PU N
+                    ModificationImpact.of(bd("0.48"),  bd("0"),    bd("0"), true,  true),   // F012-Cuir
+                    ModificationImpact.of(bd("0.03"),  bd("0.09"), bd("0"), true,  true),   // F015
+                    ModificationImpact.of(bd("0.477"), bd("0"),    bd("0"), true,  false),  // F017 OPEN
+                    ModificationImpact.of(bd("0.045"), bd("0.48"), bd("0"), true,  false)   // F018 OPEN
             );
             BigDecimal result = PricingEngine.computeUpdatedBase(bd("20"), impacts);
             assertThat(result).isEqualByComparingTo(bd("19.31"));
@@ -133,9 +133,9 @@ class PricingEngineTest {
         void canceled_sheets_have_no_effect() {
             List<ModificationImpact> impacts = List.of(
                     // F004 CANCELED, would have applied
-                    ModificationImpact.of(bd("1.79"), bd("0.1"), true, false),
+                    ModificationImpact.of(bd("1.79"), bd("0.1"), bd("0"), true, false),
                     // F013 CANCELED, would have applied
-                    ModificationImpact.of(bd("0"),    bd("0.05"), true, false)
+                    ModificationImpact.of(bd("0"),    bd("0.05"), bd("0"), true, false)
             );
             BigDecimal base = PricingEngine.computeUpdatedBase(bd("10"), impacts);
             BigDecimal rd   = PricingEngine.computeUpdatedRdAmortization(bd("4.5"), impacts);
@@ -147,8 +147,8 @@ class PricingEngineTest {
         @DisplayName("Les fiches OPEN n'impactent jamais les prix")
         void open_sheets_have_no_effect() {
             List<ModificationImpact> impacts = List.of(
-                    ModificationImpact.of(bd("0.477"), bd("0"),    true, false),  // F017
-                    ModificationImpact.of(bd("0.045"), bd("0.48"), true, false)   // F018
+                    ModificationImpact.of(bd("0.477"), bd("0"),    bd("0"), true, false),  // F017
+                    ModificationImpact.of(bd("0.045"), bd("0.48"), bd("0"), true, false)   // F018
             );
             BigDecimal result = PricingEngine.computeUpdatedBase(bd("10"), impacts);
             assertThat(result).isEqualByComparingTo(bd("10"));
@@ -158,7 +158,7 @@ class PricingEngineTest {
         @DisplayName("Une fiche VALIDATED avec N dans la matrice n'est pas comptée")
         void validated_with_N_matrix_excluded() {
             List<ModificationImpact> impacts = List.of(
-                    ModificationImpact.of(bd("5.00"), bd("0"), false, true)  // VALIDATED but applies=false
+                    ModificationImpact.of(bd("5.00"), bd("0"), bd("0"), false, true)  // VALIDATED but applies=false
             );
             BigDecimal result = PricingEngine.computeUpdatedBase(bd("10"), impacts);
             assertThat(result).isEqualByComparingTo(bd("10"));

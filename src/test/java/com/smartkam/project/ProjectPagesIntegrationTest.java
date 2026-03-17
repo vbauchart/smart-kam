@@ -126,10 +126,10 @@ class ProjectPagesIntegrationTest {
         ResponseEntity<String> response = http.getForEntity("/projects/1", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        // Common R&D and packaging across all 5 references
+        // Common R&D across all 5 references; packaging updated to 0.064 by V4 (displayed as 0.06)
         assertThat(response.getBody())
                 .contains("4.50")
-                .contains("0.50");
+                .contains("0.06");
     }
 
     @Test
@@ -151,28 +151,28 @@ class ProjectPagesIntegrationTest {
 
     @Test
     @Order(10)
-    @DisplayName("POST base-price=11 → SOP recalculé à 16.00 dans le fragment")
+    @DisplayName("POST base-price=11 → SOP recalculé à 15.56 dans le fragment")
     void update_base_price_returns_recalculated_sop_in_fragment() {
         ResponseEntity<String> response = postBasePrice(1L, 1L, "11");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        // Règle 1 : 11 + 4.50 + 0.50 = 16.00
+        // Règle 1 : 11 + 4.50 + 0.064 = 15.564 (displayed as 15.56)
         assertThat(response.getBody())
-                .contains("16.00")
+                .contains("15.56")
                 .contains("PF1-1")
                 .contains("11.00");   // new base displayed in the input
     }
 
     @Test
     @Order(11)
-    @DisplayName("POST base-price → la modification est persistée (GET confirme 16.00)")
+    @DisplayName("POST base-price → la modification est persistée (GET confirme 15.56)")
     void update_base_price_is_persisted() {
         // The previous test (@Order 10) already changed PF1-1 base to 11, SOP to 16
         // This test just verifies the page reflects the persisted value
         ResponseEntity<String> response = http.getForEntity("/projects/1", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("16.00");
+        assertThat(response.getBody()).contains("15.56");
     }
 
     @Test

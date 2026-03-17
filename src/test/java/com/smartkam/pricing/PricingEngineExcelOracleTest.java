@@ -86,12 +86,12 @@ class PricingEngineExcelOracleTest {
     void rule2_updated_base_pf1_1() {
         // Only VALIDATED modifications that apply to PF1-1
         List<ModificationImpact> impacts = List.of(
-                ModificationImpact.of(bd("0.32"),  bd("0"),    true,  true),  // F012-PU
-                ModificationImpact.of(bd("0.03"),  bd("0.09"), true,  true),  // F015
-                ModificationImpact.of(bd("-1.2"),  bd("0"),    false, true),  // F005 N
-                ModificationImpact.of(bd("0.48"),  bd("0"),    false, true),  // F012-Cuir N
-                ModificationImpact.of(bd("0.477"), bd("0"),    false, false), // F017 OPEN
-                ModificationImpact.of(bd("1.79"),  bd("0.1"),  false, false)  // F004 CANCELED
+                ModificationImpact.of(bd("0.32"),  bd("0"),    bd("0"), true,  true),  // F012-PU
+                ModificationImpact.of(bd("0.03"),  bd("0.09"), bd("0"), true,  true),  // F015
+                ModificationImpact.of(bd("-1.2"),  bd("0"),    bd("0"), false, true),  // F005 N
+                ModificationImpact.of(bd("0.48"),  bd("0"),    bd("0"), false, true),  // F012-Cuir N
+                ModificationImpact.of(bd("0.477"), bd("0"),    bd("0"), false, false), // F017 OPEN
+                ModificationImpact.of(bd("1.79"),  bd("0.1"),  bd("0"), false, false)  // F004 CANCELED
         );
 
         BigDecimal base = PricingEngine.computeUpdatedBase(bd("10"), impacts);

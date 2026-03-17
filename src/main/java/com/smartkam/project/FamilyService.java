@@ -129,6 +129,7 @@ class FamilyService {
         // Section ③ — Rule 2: compute updated prices per ref
         List<BigDecimal> updatedBases = new ArrayList<>();
         List<BigDecimal> updatedRds   = new ArrayList<>();
+        List<BigDecimal> updatedPkgs  = new ArrayList<>();
         List<BigDecimal> sopUpdated   = new ArrayList<>();
 
         for (ProductReference ref : refs) {
@@ -145,6 +146,7 @@ class FamilyService {
                 return ModificationImpact.of(
                         si != null ? si.getPartPrice()       : BigDecimal.ZERO,
                         si != null ? si.getTefAmortization() : BigDecimal.ZERO,
+                        si != null ? si.getPackagingImpact() : BigDecimal.ZERO,
                         applies,
                         sheet.getStatus() == ModificationStatus.VALIDATED
                 );
@@ -152,10 +154,12 @@ class FamilyService {
 
             BigDecimal updBase = PricingEngine.computeUpdatedBase(pb.getBasePrice(), impacts);
             BigDecimal updRd   = PricingEngine.computeUpdatedRdAmortization(pb.getRdAmortization(), impacts);
-            BigDecimal sop     = PricingEngine.computeUpdatedSop(updBase, updRd, pb.getPackaging());
+            BigDecimal updPkg  = PricingEngine.computeUpdatedPackaging(pb.getPackaging(), impacts);
+            BigDecimal sop     = PricingEngine.computeUpdatedSop(updBase, updRd, updPkg);
 
             updatedBases.add(updBase);
             updatedRds.add(updRd);
+            updatedPkgs.add(updPkg);
             sopUpdated.add(sop);
         }
 
@@ -164,10 +168,8 @@ class FamilyService {
             deltas.add(sopUpdated.get(i).subtract(sopInitials.get(i)));
         }
 
-        // Section ④ — Rules 3 & 4 projection
-        List<BigDecimal> pkgs = refs.stream()
-                .map(r -> r.getPriceBreakdown().getPackaging())
-                .toList();
+        // Section ④ — Rules 3 & 4 projection (use updated packaging)
+        List<BigDecimal> pkgs = updatedPkgs;
         int sopYear = family.getProject().getSopDate() != null
                 ? family.getProject().getSopDate().getYear() : 2014;
         List<ProjectionRow> projection = buildProjection(updatedRds, pkgs, sopUpdated, sopYear);

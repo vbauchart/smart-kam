@@ -67,7 +67,7 @@ class ApplicationContextIntegrationTest {
     }
 
     @Test
-    @DisplayName("Le seed complet est chargé : 1 projet, 7 familles, 25 références, 70 fiches")
+    @DisplayName("Le seed complet est chargé : 1 projet, 7 familles, 25 références, 73 fiches")
     void seed_data_loaded() {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM project", Long.class))
                 .isEqualTo(1L);
@@ -76,7 +76,7 @@ class ApplicationContextIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM product_reference", Long.class))
                 .isEqualTo(25L);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM modification_sheet", Long.class))
-                .isEqualTo(70L);
+                .isEqualTo(73L);
     }
 
     @Test

@@ -24,8 +24,12 @@ class SheetImpact {
     @Column(name = "tooling_amount")
     private BigDecimal toolingAmount;
 
+    @Column(name = "packaging_impact")
+    private BigDecimal packagingImpact;
+
     public Long getId()                    { return id; }
     public BigDecimal getPartPrice()       { return partPrice; }
     public BigDecimal getTefAmortization() { return tefAmortization; }
     public BigDecimal getToolingAmount()   { return toolingAmount; }
+    public BigDecimal getPackagingImpact() { return packagingImpact; }
 }

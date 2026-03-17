@@ -68,6 +68,19 @@ public final class PricingEngine {
         return initialRd.add(delta);
     }
 
+    /**
+     * Computes the updated packaging cost after applying validated modifications.
+     * Excel: F28 = F8 + SUMIFS($O$14:$O$23, $B$14:$B$23,"Validated", F14:F23,"Y")
+     */
+    public static BigDecimal computeUpdatedPackaging(BigDecimal initialPackaging,
+                                                      List<ModificationImpact> impacts) {
+        BigDecimal delta = impacts.stream()
+                .filter(i -> i.validated() && i.applies())
+                .map(ModificationImpact::packagingImpact)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return initialPackaging.add(delta);
+    }
+
     /** Assembles the updated SOP from its three updated components. */
     public static BigDecimal computeUpdatedSop(BigDecimal updatedBase,
                                                BigDecimal updatedRd,

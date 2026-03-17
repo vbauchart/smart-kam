@@ -90,8 +90,8 @@ class FamilyPagesIntegrationTest {
         // All 5 refs visible
         assertThat(body).contains("PF1-1").contains("PF1-2").contains("PF1-3")
                         .contains("PF1-4").contains("PF1-5");
-        // R&D and packaging components
-        assertThat(body).contains("4.500").contains("0.500");
+        // R&D and packaging components (V4 changed PF1 packaging from 0.5 to 0.064)
+        assertThat(body).contains("4.500").contains("0.064");
         // SOP Initial row (id="sop-initial-row") with known values
         assertThat(body)
                 .contains("sop-initial-row")
@@ -125,15 +125,15 @@ class FamilyPagesIntegrationTest {
         // Section ③ header
         assertThat(body).contains("Prix SOP Actualisés");
         // PF1-1: VALIDATED F012-PU (+0.32 part) + F015 (+0.03 part, +0.09 tef)
-        //   updatedBase=10.350, updatedRd=4.590, sopUpdated=15.440
-        assertThat(body).contains("15.440");
+        //   updatedBase=10.350, updatedRd=4.590, updatedPkg=0.064, sopUpdated=15.004
+        assertThat(body).contains("15.004");
         // PF1-4: VALIDATED F005 (-1.20 part) + F012-Cuir (+0.48 part) + F015 (+0.03 part, +0.09 tef)
-        //   updatedBase=19.310, updatedRd=4.590, sopUpdated=24.400
-        assertThat(body).contains("24.400");
-        // Delta PF1-1 = +0.440
-        assertThat(body).contains("+0.440");
-        // Delta PF1-4 = -0.600
-        assertThat(body).contains("-0.600");
+        //   updatedBase=19.310, updatedRd=4.590, updatedPkg=0.064, sopUpdated=23.964
+        assertThat(body).contains("23.964");
+        // Delta PF1-1 = 15.004 - 15.000 = +0.004
+        assertThat(body).contains("+0.004");
+        // Delta PF1-4 = 23.964 - 25.000 = -1.036
+        assertThat(body).contains("-1.036");
     }
 
     @Test
@@ -212,8 +212,8 @@ class FamilyPagesIntegrationTest {
                 "base_price", "12");
 
         // updatedBase = 12 + 0.32 (F012-PU) + 0.03 (F015) = 12.35
-        // sopUpdated = 12.35 + 4.59 + 0.50 = 17.440
-        assertThat(response.getBody()).contains("17.440");
+        // sopUpdated = 12.35 + 4.59 + 0.064 = 17.004
+        assertThat(response.getBody()).contains("17.004");
     }
 
     @Test
@@ -235,8 +235,8 @@ class FamilyPagesIntegrationTest {
                 "rd_value", "5");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        // PF1-2: base=12, rd=5, pkg=0.5 → sopInitial = 17.500
-        assertThat(response.getBody()).contains("17.500");
+        // PF1-2: base=12, rd=5, pkg=0.064 → sopInitial = 17.064
+        assertThat(response.getBody()).contains("17.064");
     }
 
     @Test
