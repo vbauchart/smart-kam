@@ -1,0 +1,55 @@
+/* Smart KAM — Application styles */
+
+/* Section headers in price tables */
+.section-header-initial   { background-color: #dbeafe; } /* blue-100  */
+.section-header-modif     { background-color: #ffedd5; } /* orange-100 */
+.section-header-prix      { background-color: #dcfce7; } /* green-100 */
+.section-header-projection{ background-color: #f3e8ff; } /* purple-100 */
+
+/* Status badges */
+.badge-validated { background-color: #16a34a; }
+.badge-open      { background-color: #d97706; }
+.badge-canceled  { background-color: #6b7280; }
+
+/* Sticky table columns — left frozen */
+.col-sticky-left {
+    position: sticky;
+    background: white;
+    z-index: 2;
+}
+.col-sticky-left:nth-child(1) { left: 0; }
+.col-sticky-left:nth-child(2) { left: 80px; }
+.col-sticky-left:nth-child(3) { left: 220px; }
+
+/* Sticky table columns — right frozen */
+.col-sticky-right {
+    position: sticky;
+    right: 0;
+    background: white;
+    z-index: 2;
+}
+
+/* Scrollable PF columns container */
+.table-pf-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+/* HTMX loading indicator */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+
+/* Inline editable cells */
+.cell-editable {
+    cursor: pointer;
+    border-bottom: 1px dashed #93c5fd;
+    transition: background-color 0.15s;
+}
+.cell-editable:hover {
+    background-color: #eff6ff;
+}
+
+/* Delta indicators */
+.delta-positive { color: #16a34a; font-weight: 600; }
+.delta-negative { color: #dc2626; font-weight: 600; }
+.delta-zero     { color: #6b7280; }

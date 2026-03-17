@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' — Smart KAM'">Smart KAM</title>
+
+    <!-- Bootstrap 5 (WebJar) -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <!-- App CSS -->
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+
+    <!-- HTMX — server-side interactivity -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <!-- Alpine.js — client-side micro-interactions -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+</head>
+
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" th:href="@{/}">
+            <span class="me-1">📊</span> Smart KAM
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-3">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/projects}">Projets</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div th:fragment="scripts">
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</div>
+</html>

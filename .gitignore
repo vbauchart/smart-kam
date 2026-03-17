@@ -1,0 +1,14 @@
+target/
+.idea/
+*.iml
+.DS_Store
+*.class
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+# Spring Boot
+application-local.yml
