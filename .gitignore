@@ -12,3 +12,6 @@ logs/
 
 # Spring Boot
 application-local.yml
+
+# Local temp directory (used by Maven/Surefire/Testcontainers instead of /tmp)
+tmp/
