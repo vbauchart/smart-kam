@@ -71,7 +71,7 @@ class ProjectPagesIntegrationTest {
         assertThat(response.getBody())
                 .contains("MyProject")
                 .contains("PRODUCTION")
-                .contains("Voir les prix");
+                .contains("Voir les familles");
     }
 
     @Test

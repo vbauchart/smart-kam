@@ -5,44 +5,74 @@
 
 <nav th:replace="~{layout :: navbar}"></nav>
 
-<main class="container-fluid mt-4">
+<main class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 fw-bold text-primary mb-0">Projets</h1>
-            <p class="text-muted small mb-0">Liste des projets clients</p>
+    <!-- Dark header bar -->
+    <div class="page-header d-flex align-items-center gap-3 px-4 py-3">
+        <div class="flex-grow-1">
+            <h1 class="h5 fw-bold text-white mb-0">Projets</h1>
+            <p class="small mb-0" style="color:rgba(255,255,255,.55);">Tableau de bord commercial</p>
         </div>
+        <span class="badge bg-white text-dark"
+              style="font-size:11px;"
+              th:text="${#lists.size(projects)} + ' projet' + (${#lists.size(projects)} > 1 ? 's' : '')">
+            0 projets
+        </span>
     </div>
 
-    <div class="row g-3">
-        <div class="col-md-4 col-lg-3" th:each="project : ${projects}">
-            <a th:href="@{/projects/{id}(id=${project.id})}" class="text-decoration-none">
-                <div class="card h-100 shadow-sm border-0 card-hover">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title fw-bold text-dark mb-0" th:text="${project.name}">Projet</h5>
-                            <span class="badge ms-2"
-                                  th:classappend="${project.status.name() == 'PRODUCTION'} ? 'bg-success' :
-                                                  (${project.status.name() == 'RFQ'} ? 'bg-secondary' :
-                                                  (${project.status.name() == 'EOP'} ? 'bg-dark' : 'bg-primary'))"
-                                  th:text="${project.status}">PRODUCTION</span>
+    <!-- Info banner -->
+    <div class="info-banner">
+        Cliquez sur un projet pour accéder au tableau de prix initial &nbsp;·&nbsp;
+        Cliquez sur une famille pour la page de détail complète (sections ①②③④).
+    </div>
+
+    <!-- Cards grid -->
+    <div class="py-4 px-4">
+
+        <div class="row g-3">
+            <div class="col-md-4 col-lg-3" th:each="project : ${projects}">
+                <a th:href="@{/projects/{id}(id=${project.id})}" class="text-decoration-none d-block h-100">
+                    <div class="proj-card h-100">
+
+                        <!-- Status accent bar -->
+                        <div class="proj-card-accent"
+                             th:classappend="${project.status.name() == 'PRODUCTION'} ? 'proj-accent-prod' :
+                                            (${project.status.name() == 'EOP'}        ? 'proj-accent-eop' :
+                                            (${project.status.name() == 'SOP'}        ? 'proj-accent-sop' :
+                                            (${project.status.name() == 'DEVELOPMENT'} ? 'proj-accent-dev' : 'proj-accent-other')))">
                         </div>
-                        <p class="card-text text-muted small" th:text="${project.description}">Description</p>
-                        <div class="text-muted small" th:if="${project.sopDate != null}">
-                            <span class="me-1">📅</span>
-                            SOP : <span th:text="${#temporals.format(project.sopDate, 'dd/MM/yyyy')}"></span>
+
+                        <div class="proj-card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="proj-card-name" th:text="${project.name}">Projet</span>
+                                <span class="proj-badge ms-2"
+                                      th:classappend="${project.status.name() == 'PRODUCTION'} ? 'proj-badge-prod' :
+                                                     (${project.status.name() == 'EOP'}        ? 'proj-badge-eop' :
+                                                     (${project.status.name() == 'SOP'}        ? 'proj-badge-sop' :
+                                                     (${project.status.name() == 'DEVELOPMENT'} ? 'proj-badge-dev' : 'proj-badge-other')))"
+                                      th:text="${project.status}">STATUS</span>
+                            </div>
+                            <p class="proj-card-desc" th:if="${project.description != null}"
+                               th:text="${project.description}">Description</p>
+                            <div class="proj-card-meta" th:if="${project.sopDate != null}">
+                                SOP &mdash;
+                                <span th:text="${#temporals.format(project.sopDate, 'MMM yyyy')}"></span>
+                            </div>
                         </div>
+
+                        <div class="proj-card-footer">
+                            Voir les familles de prix &rarr;
+                        </div>
+
                     </div>
-                    <div class="card-footer bg-transparent border-0">
-                        <span class="btn btn-outline-primary btn-sm w-100">Voir les prix →</span>
-                    </div>
-                </div>
-            </a>
+                </a>
+            </div>
+
+            <div class="col-12" th:if="${#lists.isEmpty(projects)}">
+                <p class="text-muted small py-5 text-center">Aucun projet trouvé.</p>
+            </div>
         </div>
 
-        <div class="col-12" th:if="${#lists.isEmpty(projects)}">
-            <div class="alert alert-info">Aucun projet trouvé.</div>
-        </div>
     </div>
 
 </main>
