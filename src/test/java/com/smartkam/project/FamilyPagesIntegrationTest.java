@@ -343,6 +343,26 @@ class FamilyPagesIntegrationTest {
     }
 
     // -------------------------------------------------------------------------
+    // Cross-family matrix — sheet from another family
+    // -------------------------------------------------------------------------
+
+    @Test
+    @Order(50)
+    @DisplayName("POST applies on cross-family sheet/ref combo — creates entry if missing")
+    void post_matrix_applies_cross_family_creates_entry() {
+        // Sheet 43 (PF5 sheet F037bis) has no application entry for ref 4 (PF1-4)
+        // Toggling should create the entry, not crash
+        ResponseEntity<String> response = postWithQueryParam(
+                "/projects/1/families/1/sheets/43/references/4/applies",
+                "applies", "true");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody())
+                .contains("sections-computed")
+                .doesNotContain("<!DOCTYPE");
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

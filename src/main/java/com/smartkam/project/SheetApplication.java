@@ -26,4 +26,6 @@ class SheetApplication {
     public boolean isApplies()            { return applies; }
 
     public void setApplies(boolean applies) { this.applies = applies; }
+    public void setSheet(ModificationSheet sheet) { this.sheet = sheet; }
+    public void setReference(ProductReference reference) { this.reference = reference; }
 }

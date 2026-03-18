@@ -14,19 +14,22 @@ import java.util.List;
 @Transactional
 class FamilyService {
 
-    private final ProductFamilyRepository     familyRepository;
-    private final ModificationSheetRepository sheetRepository;
-    private final PriceBreakdownRepository    priceBreakdownRepository;
-    private final SheetApplicationRepository  applicationRepository;
+    private final ProductFamilyRepository      familyRepository;
+    private final ModificationSheetRepository  sheetRepository;
+    private final PriceBreakdownRepository     priceBreakdownRepository;
+    private final SheetApplicationRepository   applicationRepository;
+    private final ProductReferenceRepository   referenceRepository;
 
     FamilyService(ProductFamilyRepository familyRepository,
                   ModificationSheetRepository sheetRepository,
                   PriceBreakdownRepository priceBreakdownRepository,
-                  SheetApplicationRepository applicationRepository) {
+                  SheetApplicationRepository applicationRepository,
+                  ProductReferenceRepository referenceRepository) {
         this.familyRepository       = familyRepository;
         this.sheetRepository        = sheetRepository;
         this.priceBreakdownRepository = priceBreakdownRepository;
         this.applicationRepository  = applicationRepository;
+        this.referenceRepository    = referenceRepository;
     }
 
     // -------------------------------------------------------------------------
@@ -90,8 +93,13 @@ class FamilyService {
     FamilyView updateMatrixApplies(Long projectId, Long familyId,
                                     Long sheetId, Long refId, boolean applies) {
         SheetApplication app = applicationRepository.findBySheetIdAndReferenceId(sheetId, refId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Application not found for sheet " + sheetId + " / ref " + refId));
+                .orElseGet(() -> {
+                    // Cross-family: sheet has no entry for this ref yet — create one
+                    SheetApplication newApp = new SheetApplication();
+                    newApp.setSheet(sheetRepository.getReferenceById(sheetId));
+                    newApp.setReference(referenceRepository.getReferenceById(refId));
+                    return newApp;
+                });
         app.setApplies(applies);
         applicationRepository.save(app);
         return getView(projectId, familyId);
