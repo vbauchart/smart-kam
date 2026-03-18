@@ -304,6 +304,17 @@ class FamilyPagesIntegrationTest {
     }
 
     @Test
+    @Order(40)
+    @DisplayName("GET ?simulate=9 — la ligne de la fiche simulée est en surbrillance")
+    void whatif_simulation_highlights_simulated_sheet_row() {
+        ResponseEntity<String> response = http.getForEntity(
+                "/projects/1/families/1?simulate=9", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("sim-active");
+    }
+
+    @Test
     @Order(41)
     @DisplayName("GET ?simulate=9 — simulation does NOT persist changes")
     void whatif_simulation_does_not_persist() {

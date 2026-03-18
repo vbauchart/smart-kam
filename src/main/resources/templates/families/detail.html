@@ -234,7 +234,8 @@
                 <!-- Modification rows -->
                 <th:block th:each="sr : ${view.sheets}">
                     <tr class="modif-row"
-                        th:classappend="${sr.sheet.status.name() == 'CANCELED'} ? ' canceled'">
+                        th:classappend="${sr.sheet.status.name() == 'CANCELED'} ? ' canceled' :
+                                         (${view.simulatedSheetId != null and view.simulatedSheetId == sr.sheet.id} ? ' sim-active' : '')">
 
                         <td class="stick-a">
                             <select class="status-select"
