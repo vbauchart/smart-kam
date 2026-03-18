@@ -20,6 +20,15 @@ class ProductFamily {
 
     private String designation;
 
+    @Column(name = "productivity_rate")
+    private java.math.BigDecimal productivityRate;
+
+    @Column(name = "productivity_years")
+    private int productivityYears;
+
+    @Column(name = "rd_drop_year")
+    private int rdDropYear;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -31,6 +40,9 @@ class ProductFamily {
     public Project getProject() { return project; }
     public String getCode() { return code; }
     public String getDesignation() { return designation; }
+    public java.math.BigDecimal getProductivityRate() { return productivityRate; }
+    public int getProductivityYears() { return productivityYears; }
+    public int getRdDropYear() { return rdDropYear; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public List<ProductReference> getReferences() { return references; }
 }

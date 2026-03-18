@@ -292,9 +292,12 @@
         </table>
     </div>
 
-    <div class="info-banner mt-0 mb-3">
-        <strong>Règle 3 :</strong> Productivité −1 % / an × 4 ans &nbsp;·&nbsp;
-        <strong>Règle 4 :</strong> Tombée des rondelles R&amp;D à SOP+7
+    <div class="info-banner mt-0 mb-3"
+         th:with="pctRate=${view.family.productivityRate.multiply(new java.math.BigDecimal('100'))}">
+        <strong>Règle 3 :</strong> Productivité
+        <span th:text="${pctRate.toPlainString() + ' %'}"></span>
+        / an × <span th:text="${view.family.productivityYears}"></span> ans &nbsp;·&nbsp;
+        <strong>Règle 4 :</strong> Tombée des rondelles R&amp;D à SOP+<span th:text="${view.family.rdDropYear}"></span>
     </div>
 
 </main>

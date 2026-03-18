@@ -14,10 +14,6 @@ import java.util.List;
 @Transactional
 class FamilyService {
 
-    private static final BigDecimal PRODUCTIVITY_RATE  = new BigDecimal("-0.01");
-    private static final int        PRODUCTIVITY_YEARS = 4;
-    private static final int        RD_DROP_YEAR       = 7;
-
     private final ProductFamilyRepository     familyRepository;
     private final ModificationSheetRepository sheetRepository;
     private final PriceBreakdownRepository    priceBreakdownRepository;
@@ -172,7 +168,8 @@ class FamilyService {
         List<BigDecimal> pkgs = updatedPkgs;
         int sopYear = family.getProject().getSopDate() != null
                 ? family.getProject().getSopDate().getYear() : 2014;
-        List<ProjectionRow> projection = buildProjection(updatedRds, pkgs, sopUpdated, sopYear);
+        List<ProjectionRow> projection = buildProjection(updatedRds, pkgs, sopUpdated, sopYear,
+                family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
 
         return new FamilyView(family, family.getProject(), refs,
                 sopInitials, sheetRows,
@@ -183,44 +180,62 @@ class FamilyService {
     private List<ProjectionRow> buildProjection(List<BigDecimal> updatedRds,
                                                  List<BigDecimal> pkgs,
                                                  List<BigDecimal> sopUpdated,
-                                                 int sopYear) {
+                                                 int sopYear,
+                                                 BigDecimal productivityRate,
+                                                 int productivityYears,
+                                                 int rdDropYear) {
         List<ProjectionRow> rows = new ArrayList<>();
         List<BigDecimal> current = new ArrayList<>(sopUpdated);
+        // Track per-ref R&D — drops to zero after tombée
+        List<BigDecimal> currentRds = new ArrayList<>(updatedRds);
 
         rows.add(new ProjectionRow("SOP", sopYear, "", List.copyOf(current), ""));
 
-        for (int y = 1; y <= PRODUCTIVITY_YEARS + RD_DROP_YEAR + 1; y++) {
+        int lastYear = Math.max(productivityYears, rdDropYear) + 1;
+        for (int y = 1; y <= lastYear; y++) {
             int yr = sopYear + y;
             String event = "";
             String cls   = "stable-row";
 
-            if (y <= PRODUCTIVITY_YEARS) {
+            // Tombée des rondelles — can happen during or after productivity
+            boolean tombee = (y == rdDropYear);
+            if (tombee) {
                 for (int i = 0; i < current.size(); i++) {
-                    current.set(i, PricingEngine.applyProductivity(
-                            current.get(i), updatedRds.get(i), pkgs.get(i), PRODUCTIVITY_RATE));
-                }
-                event = "Productivité " + (PRODUCTIVITY_RATE.multiply(BigDecimal.valueOf(100)).toPlainString()) + "% / an";
-                cls   = "prod-row";
-            }
-            if (y == RD_DROP_YEAR) {
-                for (int i = 0; i < current.size(); i++) {
-                    current.set(i, PricingEngine.applyTombeeDesRondelles(current.get(i), updatedRds.get(i)));
+                    current.set(i, PricingEngine.applyTombeeDesRondelles(current.get(i), currentRds.get(i)));
+                    currentRds.set(i, BigDecimal.ZERO);
                 }
                 event = "Tombée des rondelles R&D";
                 cls   = "drop-row";
             }
 
-            // Emit only relevant years — same selection as the mockup
-            if (y <= PRODUCTIVITY_YEARS) {
-                rows.add(new ProjectionRow("SOP+" + y, yr, event, List.copyOf(current), cls));
-            } else if (y == PRODUCTIVITY_YEARS + 1) {
-                rows.add(new ProjectionRow("SOP+" + y, yr, "Prix stable", List.copyOf(current), "stable-row"));
-                if (RD_DROP_YEAR > PRODUCTIVITY_YEARS + 2) {
-                    rows.add(new ProjectionRow("", 0, "", null, "ellipsis-row")); // sentinel
+            // Productivity — applied every year within the productivity period
+            boolean prod = (y <= productivityYears && productivityRate.signum() != 0);
+            if (prod) {
+                for (int i = 0; i < current.size(); i++) {
+                    current.set(i, PricingEngine.applyProductivity(
+                            current.get(i), currentRds.get(i), pkgs.get(i), productivityRate));
                 }
-            } else if (y == RD_DROP_YEAR) {
+                String prodLabel = "Productivité " +
+                        productivityRate.multiply(BigDecimal.valueOf(100)).toPlainString() + "% / an";
+                if (tombee) {
+                    event += " + " + prodLabel;
+                } else {
+                    event = prodLabel;
+                    cls   = "prod-row";
+                }
+            }
+
+            // Emit rows: show productivity years, tombée year, one year after each
+            if (y <= productivityYears) {
                 rows.add(new ProjectionRow("SOP+" + y, yr, event, List.copyOf(current), cls));
-            } else if (y == RD_DROP_YEAR + 1) {
+            } else if (y == productivityYears + 1 && y != rdDropYear) {
+                rows.add(new ProjectionRow("SOP+" + y, yr, "Prix stable", List.copyOf(current), "stable-row"));
+                if (rdDropYear > productivityYears + 2) {
+                    rows.add(new ProjectionRow("", 0, "", null, "ellipsis-row"));
+                }
+            } else if (y == rdDropYear) {
+                rows.add(new ProjectionRow("SOP+" + y, yr, event, List.copyOf(current), cls));
+            } else if (y == rdDropYear + 1) {
                 rows.add(new ProjectionRow("SOP+" + y, yr, "Prix stable (sans rondelles)", List.copyOf(current), "stable-row"));
             }
         }
