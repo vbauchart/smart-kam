@@ -177,7 +177,8 @@ class FamilyService {
                 projection);
     }
 
-    private List<ProjectionRow> buildProjection(List<BigDecimal> updatedRds,
+    // package-private for testability
+    static List<ProjectionRow> buildProjection(List<BigDecimal> updatedRds,
                                                  List<BigDecimal> pkgs,
                                                  List<BigDecimal> sopUpdated,
                                                  int sopYear,
