@@ -40,6 +40,17 @@
         </div>
     </div>
 
+    <!-- Simulation banner -->
+    <div th:if="${view.simulating}" class="info-banner"
+         style="background:#fff3cd;border-left:4px solid #ffc107;color:#664d03;">
+        <strong>Mode simulation</strong> — Fiche
+        <strong th:each="sr : ${view.sheets}" th:if="${sr.sheet.id == view.simulatedSheetId}"
+                th:text="${sr.sheet.number}">F0XX</strong>
+        traitée comme Validated. Les prix simulés apparaissent en orange dans les sections ③ et ④.
+        <a th:href="@{/projects/{p}/families/{f}(p=${view.project.id},f=${view.family.id})}"
+           class="badge bg-secondary ms-2" style="text-decoration:none;">Quitter la simulation</a>
+    </div>
+
     <!-- Info banner -->
     <div class="info-banner">
         Cellules jaunes = éditables — cliquez pour modifier.
@@ -249,6 +260,14 @@
                             <span th:if="${sr.sheet.description != null}"
                                   class="text-muted small ms-1"
                                   th:text="${' — ' + sr.sheet.description}"></span>
+                            <a th:if="${sr.sheet.status.name() == 'OPEN'}"
+                               th:href="@{/projects/{p}/families/{f}(p=${view.project.id},f=${view.family.id},simulate=${sr.sheet.id})}"
+                               class="badge bg-info text-dark ms-2"
+                               style="font-size:9px;text-decoration:none;cursor:pointer;"
+                               th:classappend="${view.simulatedSheetId != null and view.simulatedSheetId == sr.sheet.id} ? 'bg-warning' : 'bg-info'">
+                                <span th:if="${view.simulatedSheetId != null and view.simulatedSheetId == sr.sheet.id}">Simulation active</span>
+                                <span th:unless="${view.simulatedSheetId != null and view.simulatedSheetId == sr.sheet.id}">Simuler</span>
+                            </a>
                         </td>
 
                         <td class="stick-c num fw-semibold"

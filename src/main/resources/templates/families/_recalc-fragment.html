@@ -89,6 +89,18 @@
         <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
     </tr>
 
+    <!-- SOP Updated — SIMULATION row -->
+    <tr th:if="${view.simulating}" class="total-row" style="background:#fff8e1;">
+        <td class="stick-a" style="border-left:3px dashed #ff9800;"></td>
+        <td class="stick-b fw-bold" style="color:#e65100;">SOP Simulé</td>
+        <td class="stick-c"></td>
+        <th:block th:each="v : ${view.simSopUpdated}">
+            <td class="col-ref num fw-bold" style="color:#e65100;"
+                th:text="${#numbers.formatDecimal(v, 1, 'NONE', 3, 'POINT')}">—</td>
+        </th:block>
+        <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+    </tr>
+
     <!-- Delta vs LOI -->
     <tr class="delta-row">
         <td class="stick-a"></td>
@@ -97,6 +109,19 @@
         <th:block th:each="d : ${view.deltas}">
             <td class="col-ref num"
                 th:classappend="${d.signum() > 0} ? 'num positive' : (${d.signum() < 0} ? 'num negative' : 'num zero')"
+                th:text="${(d.signum() >= 0 ? '+' : '') + #numbers.formatDecimal(d, 1, 'NONE', 3, 'POINT')}">—</td>
+        </th:block>
+        <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+    </tr>
+
+    <!-- Delta vs LOI — SIMULATION row -->
+    <tr th:if="${view.simulating}" class="delta-row" style="background:#fff8e1;">
+        <td class="stick-a" style="border-left:3px dashed #ff9800;"></td>
+        <td class="stick-b text-muted small" style="color:#e65100;">Écart simulé</td>
+        <td class="stick-c"></td>
+        <th:block th:each="d : ${view.simDeltas}">
+            <td class="col-ref num" style="color:#e65100;"
+                th:classappend="${d.signum() > 0} ? 'positive' : (${d.signum() < 0} ? 'negative' : 'zero')"
                 th:text="${(d.signum() >= 0 ? '+' : '') + #numbers.formatDecimal(d, 1, 'NONE', 3, 'POINT')}">—</td>
         </th:block>
         <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
@@ -153,6 +178,41 @@
             <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
         </tr>
 
+    </th:block>
+
+    <!-- Simulation projection — separate block after real projection -->
+    <th:block th:if="${view.simulating}">
+        <tr class="spacer-row">
+            <td class="stick-a"></td><td class="stick-b"></td><td class="stick-c"></td>
+            <th:block th:each="r : ${view.refs}"><td class="col-ref"></td></th:block>
+            <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+        </tr>
+        <tr class="section-row" style="background:#fff8e1;border-left:3px dashed #ff9800;">
+            <td class="stick-a" style="border-left:3px dashed #ff9800;"></td>
+            <td class="stick-b" style="color:#e65100;">Projection simulée</td>
+            <td class="stick-c"></td>
+            <th:block th:each="r : ${view.refs}"><td class="col-ref"></td></th:block>
+            <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+        </tr>
+        <th:block th:each="pr : ${view.simProjection}">
+            <tr th:if="${pr.prices == null}" class="ellipsis-row" style="background:#fff8e1;">
+                <td th:attr="colspan=${3 + #lists.size(view.refs) + 3}"
+                    style="text-align:center;padding:2px!important;">· · ·</td>
+            </tr>
+            <tr th:unless="${pr.prices == null}" th:class="${pr.rowClass}" style="background:#fff8e1;">
+                <td class="stick-a" style="border-left:3px dashed #ff9800;line-height:1.3;">
+                    <span class="fw-bold" style="color:#e65100;" th:text="${pr.label}">SOP</span><br>
+                    <span style="font-weight:400;color:#bf360c;font-size:10px;" th:text="${pr.year}"></span>
+                </td>
+                <td class="stick-b small" style="color:#e65100;" th:text="${pr.event}"></td>
+                <td class="stick-c"></td>
+                <th:block th:each="p : ${pr.prices}">
+                    <td class="col-ref num" style="color:#e65100;"
+                        th:text="${#numbers.formatDecimal(p, 1, 'NONE', 3, 'POINT')}">—</td>
+                </th:block>
+                <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
+            </tr>
+        </th:block>
     </th:block>
 
 </th:block>

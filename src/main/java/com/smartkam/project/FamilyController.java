@@ -23,8 +23,9 @@ class FamilyController {
     @GetMapping
     String detail(@PathVariable Long projectId,
                   @PathVariable Long familyId,
+                  @RequestParam(value = "simulate", required = false) Long simulateSheetId,
                   Model model) {
-        model.addAttribute("view", familyService.getView(projectId, familyId));
+        model.addAttribute("view", familyService.getView(projectId, familyId, simulateSheetId));
         return "families/detail";
     }
 

@@ -281,6 +281,57 @@ class FamilyPagesIntegrationTest {
     }
 
     // -------------------------------------------------------------------------
+    // What-if simulation
+    // -------------------------------------------------------------------------
+
+    @Test
+    @Order(40)
+    @DisplayName("GET ?simulate=9 — simulation banner and simulated prices appear")
+    void whatif_simulation_shows_simulated_prices() {
+        // Sheet 9 is OPEN in PF1 seed data (F017 — MAJ prix PF1itchs)
+        ResponseEntity<String> response = http.getForEntity(
+                "/projects/1/families/1?simulate=9", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String body = response.getBody();
+        // Simulation banner
+        assertThat(body).contains("Mode simulation");
+        assertThat(body).contains("Quitter la simulation");
+        // Simulated SOP row
+        assertThat(body).contains("SOP Simul");
+        // Simulated delta row
+        assertThat(body).contains("cart simul");
+    }
+
+    @Test
+    @Order(41)
+    @DisplayName("GET ?simulate=9 — simulation does NOT persist changes")
+    void whatif_simulation_does_not_persist() {
+        // First, trigger the simulation
+        http.getForEntity("/projects/1/families/1?simulate=9", String.class);
+        // Then load without simulation — prices should be unchanged
+        ResponseEntity<String> response = http.getForEntity("/projects/1/families/1", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        // No simulation banner
+        assertThat(response.getBody()).doesNotContain("Mode simulation");
+        assertThat(response.getBody()).doesNotContain("SOP Simul");
+    }
+
+    @Test
+    @Order(42)
+    @DisplayName("GET ?simulate=8 — simulating a VALIDATED sheet is ignored")
+    void whatif_simulation_ignores_validated_sheets() {
+        // Sheet 8 is VALIDATED — simulation should be a no-op
+        ResponseEntity<String> response = http.getForEntity(
+                "/projects/1/families/1?simulate=8", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        // No simulation banner (can't simulate already-validated sheets)
+        assertThat(response.getBody()).doesNotContain("Mode simulation");
+    }
+
+    // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 

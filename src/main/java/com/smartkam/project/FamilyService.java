@@ -35,11 +35,16 @@ class FamilyService {
 
     @Transactional(readOnly = true)
     FamilyView getView(Long projectId, Long familyId) {
+        return getView(projectId, familyId, null);
+    }
+
+    @Transactional(readOnly = true)
+    FamilyView getView(Long projectId, Long familyId, Long simulateSheetId) {
         ProductFamily family = familyRepository.findByIdWithRefs(familyId)
                 .orElseThrow(() -> new IllegalArgumentException("Family not found: " + familyId));
         List<ProductReference> refs = family.getReferences();
         List<ModificationSheet> sheets = sheetRepository.findByProjectIdWithDetails(projectId);
-        return compute(family, refs, sheets);
+        return compute(family, refs, sheets, simulateSheetId);
     }
 
     // -------------------------------------------------------------------------
@@ -103,7 +108,8 @@ class FamilyService {
 
     private FamilyView compute(ProductFamily family,
                                List<ProductReference> refs,
-                               List<ModificationSheet> sheets) {
+                               List<ModificationSheet> sheets,
+                               Long simulateSheetId) {
         // Build sheet rows with ordered applications
         List<SheetRow> sheetRows = sheets.stream().map(sheet -> {
             SheetImpact impact = sheet.getImpact();
@@ -122,7 +128,61 @@ class FamilyService {
                 .map(r -> r.getPriceBreakdown().getSopInitial())
                 .toList();
 
-        // Section ③ — Rule 2: compute updated prices per ref
+        // Compute updated prices (real), then optionally simulate
+        UpdatedPrices real = computeUpdatedPrices(refs, sheets, sheetRows, null);
+
+        List<BigDecimal> deltas = new ArrayList<>();
+        for (int i = 0; i < refs.size(); i++) {
+            deltas.add(real.sopUpdated.get(i).subtract(sopInitials.get(i)));
+        }
+
+        // Section ④ — projection
+        int sopYear = family.getProject().getSopDate() != null
+                ? family.getProject().getSopDate().getYear() : 2014;
+        List<ProjectionRow> projection = buildProjection(real.updatedRds, real.updatedPkgs,
+                real.sopUpdated, sopYear,
+                family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
+
+        // What-if simulation
+        Long actualSimId = null;
+        List<BigDecimal> simSopUpdated = null;
+        List<BigDecimal> simDeltas = null;
+        List<ProjectionRow> simProjection = null;
+
+        if (simulateSheetId != null) {
+            // Verify the sheet is OPEN (only OPEN sheets can be simulated)
+            boolean isOpen = sheets.stream()
+                    .anyMatch(s -> s.getId().equals(simulateSheetId)
+                              && s.getStatus() == ModificationStatus.OPEN);
+            if (isOpen) {
+                actualSimId = simulateSheetId;
+                UpdatedPrices sim = computeUpdatedPrices(refs, sheets, sheetRows, simulateSheetId);
+                simSopUpdated = sim.sopUpdated;
+                simDeltas = new ArrayList<>();
+                for (int i = 0; i < refs.size(); i++) {
+                    simDeltas.add(sim.sopUpdated.get(i).subtract(sopInitials.get(i)));
+                }
+                simProjection = buildProjection(sim.updatedRds, sim.updatedPkgs,
+                        sim.sopUpdated, sopYear,
+                        family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
+            }
+        }
+
+        return new FamilyView(family, family.getProject(), refs,
+                sopInitials, sheetRows,
+                real.updatedBases, real.updatedRds, real.sopUpdated, deltas,
+                projection,
+                actualSimId, simSopUpdated, simDeltas, simProjection);
+    }
+
+    /**
+     * Computes updated prices per reference. If simulateSheetId is non-null,
+     * that OPEN sheet is treated as VALIDATED for the computation.
+     */
+    private UpdatedPrices computeUpdatedPrices(List<ProductReference> refs,
+                                                List<ModificationSheet> sheets,
+                                                List<SheetRow> sheetRows,
+                                                Long simulateSheetId) {
         List<BigDecimal> updatedBases = new ArrayList<>();
         List<BigDecimal> updatedRds   = new ArrayList<>();
         List<BigDecimal> updatedPkgs  = new ArrayList<>();
@@ -139,12 +199,14 @@ class FamilyService {
                         .filter(a -> a.refId().equals(ref.getId()))
                         .map(RefApply::applies)
                         .findFirst().orElse(false);
+                boolean validated = sheet.getStatus() == ModificationStatus.VALIDATED
+                        || sheet.getId().equals(simulateSheetId);
                 return ModificationImpact.of(
                         si != null ? si.getPartPrice()       : BigDecimal.ZERO,
                         si != null ? si.getTefAmortization() : BigDecimal.ZERO,
                         si != null ? si.getPackagingImpact() : BigDecimal.ZERO,
                         applies,
-                        sheet.getStatus() == ModificationStatus.VALIDATED
+                        validated
                 );
             }).toList();
 
@@ -159,23 +221,11 @@ class FamilyService {
             sopUpdated.add(sop);
         }
 
-        List<BigDecimal> deltas = new ArrayList<>();
-        for (int i = 0; i < refs.size(); i++) {
-            deltas.add(sopUpdated.get(i).subtract(sopInitials.get(i)));
-        }
-
-        // Section ④ — Rules 3 & 4 projection (use updated packaging)
-        List<BigDecimal> pkgs = updatedPkgs;
-        int sopYear = family.getProject().getSopDate() != null
-                ? family.getProject().getSopDate().getYear() : 2014;
-        List<ProjectionRow> projection = buildProjection(updatedRds, pkgs, sopUpdated, sopYear,
-                family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
-
-        return new FamilyView(family, family.getProject(), refs,
-                sopInitials, sheetRows,
-                updatedBases, updatedRds, sopUpdated, deltas,
-                projection);
+        return new UpdatedPrices(updatedBases, updatedRds, updatedPkgs, sopUpdated);
     }
+
+    private record UpdatedPrices(List<BigDecimal> updatedBases, List<BigDecimal> updatedRds,
+                                  List<BigDecimal> updatedPkgs, List<BigDecimal> sopUpdated) {}
 
     // package-private for testability
     static List<ProjectionRow> buildProjection(List<BigDecimal> updatedRds,
