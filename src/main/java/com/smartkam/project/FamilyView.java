@@ -5,8 +5,8 @@ import java.util.List;
 
 /**
  * View model for the product-family detail page.
- * Carries all data for the 4 sections (Initial Contract, Modification Sheets,
- * Updated Prices, Annual Projection).
+ * Carries all data for the 5 sections (Initial Contract, Modification Sheets,
+ * Updated Prices, Annual Projection, Monthly Timeline).
  *
  * <p>When a What-if simulation is active ({@code simulatedSheetId != null}),
  * the {@code sim*} fields hold the projected values as if the simulated sheet
@@ -32,7 +32,10 @@ public record FamilyView(
         // ④ Annual Projection — ordered rows (Rule 3 + 4)
         List<ProjectionRow> projection,
 
-        // ⑤ What-if simulation (null when not simulating)
+        // ⑤ Monthly Timeline — expanded year×month view
+        List<MonthlyTimelineRow> monthlyTimeline,
+
+        // ⑥ What-if simulation (null when not simulating)
         Long simulatedSheetId,
         List<BigDecimal> simSopUpdated,
         List<BigDecimal> simDeltas,
@@ -43,9 +46,11 @@ public record FamilyView(
                       List<BigDecimal> sopInitials, List<SheetRow> sheets,
                       List<BigDecimal> updatedBases, List<BigDecimal> updatedRds,
                       List<BigDecimal> sopUpdated, List<BigDecimal> deltas,
-                      List<ProjectionRow> projection) {
+                      List<ProjectionRow> projection,
+                      List<MonthlyTimelineRow> monthlyTimeline) {
         this(family, project, refs, sopInitials, sheets,
              updatedBases, updatedRds, sopUpdated, deltas, projection,
+             monthlyTimeline,
              null, null, null, null);
     }
 

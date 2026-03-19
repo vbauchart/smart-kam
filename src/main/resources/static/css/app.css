@@ -384,6 +384,36 @@ select.st-canceled  { background: #eaecee; color: #7f8c8d; }
 
 .ref-row td { color: #95a5a6; font-size: 11px; }
 
+/* ⑤ Monthly Timeline */
+.section-row.sec-timeline td { background: #eceff1 !important; color: #607d8b; }
+
+.timeline-year td {
+    background: #f5f7f9 !important;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e4e8 !important;
+}
+.timeline-year.drop-row td { background: #fdedec !important; border-top: 2px solid #e74c3c !important; }
+.timeline-year.drop-row td.num { color: #e74c3c; }
+.timeline-year.prod-row td { background: #f9f2fc !important; }
+.timeline-year:hover td { background: #eef1f5 !important; }
+
+.timeline-month td {
+    font-size: 11px;
+    color: #888;
+    padding: 3px 8px !important;
+    background: #fafbfc !important;
+    border-bottom: 1px solid #f0f2f4 !important;
+}
+
+.tl-arrow {
+    display: inline-block;
+    font-size: 9px;
+    color: #bbb;
+    margin-right: 4px;
+    transition: transform 0.15s;
+}
+.tl-arrow-open { transform: rotate(90deg); }
+
 /* Flash animation on recalc */
 @keyframes flash { 0% { background: #aed6f1 !important; } 100% { } }
 .flash-update { animation: flash 0.6s ease-out; }

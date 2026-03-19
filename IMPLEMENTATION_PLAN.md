@@ -394,9 +394,9 @@ Implémentation de la **Règle 3 — Productivité Contractuelle**.
 | SOP+1 | 14.900 | 16.884 | 18.868 | 23.774 | 28.774 |
 | SOP+2 | 14.797 | 16.765 | 18.733 | 23.585 | 28.585 |
 
-- [ ] **Timeline mensuelle** : navigation mois par mois avec les modifications appliquées à chaque date
+- [x] **Timeline mensuelle** : navigation mois par mois avec les modifications appliquées à chaque date
 - [ ] Possibilité d'insérer une modification de prix à une date précise (ex : "MAJ matières en mars 2015")
-- [ ] Colonne de simulation : comparaison productivité appliquée sur totalité du prix vs sur prix nu uniquement
+- [x] Colonne de simulation : comparaison productivité appliquée sur totalité du prix vs sur prix nu uniquement
 - [x] **Mode "What-if" (simulation)** : le KAM peut tester l'impact d'une modification avant de la valider
   - [x] Bouton "Simuler" sur une fiche `Open` : affiche les prix recalculés en surbrillance sans toucher aux prix réels
   - [x] Comparaison côte-à-côte : prix actuels vs prix si la fiche était validée

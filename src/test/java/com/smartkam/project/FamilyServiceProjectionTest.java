@@ -326,6 +326,175 @@ class FamilyServiceProjectionTest {
         }
     }
 
+    // =========================================================================
+    // Monthly Timeline tests
+    // =========================================================================
+
+    @Nested
+    @DisplayName("Timeline Mensuelle — PF1 style (-1%/4 ans, tombée SOP+7)")
+    class TimelinePF1 {
+
+        private final BigDecimal rate = bd("-0.01");
+        private final int prodYears = 4;
+        private final int rdDropYear = 7;
+        private final List<BigDecimal> rds = List.of(bd("4.59"));
+        private final List<BigDecimal> pkgs = List.of(bd("0.064"));
+        private final List<BigDecimal> sopUpdated = List.of(bd("15.004"));
+
+        @Test
+        @DisplayName("Chaque année génère 1 summary + 12 mois = 13 lignes")
+        void each_year_produces_13_rows() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            // lastYear = max(4,7)+1 = 8, so years 0..8 = 9 years × 13 = 117 rows
+            assertThat(rows).hasSize(9 * 13);
+        }
+
+        @Test
+        @DisplayName("Les lignes summary ont month=0 et les bonnes étiquettes")
+        void summary_rows_have_correct_labels() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            List<MonthlyTimelineRow> summaries = rows.stream().filter(MonthlyTimelineRow::isSummary).toList();
+            assertThat(summaries).hasSize(9);
+            assertThat(summaries.get(0).label()).isEqualTo("SOP");
+            assertThat(summaries.get(0).year()).isEqualTo(2014);
+            assertThat(summaries.get(1).label()).isEqualTo("SOP+1");
+            assertThat(summaries.get(8).label()).isEqualTo("SOP+8");
+        }
+
+        @Test
+        @DisplayName("SOP year: prix = sopUpdated, event = F4 validées")
+        void sop_year_prices() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            MonthlyTimelineRow sopSummary = findTimelineRow(rows, "SOP", 0);
+            assertThat(sopSummary.prices().get(0)).isEqualByComparingTo(bd("15.004"));
+            assertThat(sopSummary.event()).contains("F4 validées");
+
+            // All 12 months have same price
+            for (int m = 1; m <= 12; m++) {
+                MonthlyTimelineRow month = rows.get(m); // SOP year months are at index 1-12
+                assertThat(month.prices().get(0)).isEqualByComparingTo(bd("15.004"));
+            }
+        }
+
+        @Test
+        @DisplayName("SOP+1: productivité appliquée, prix correct identique à projection annuelle")
+        void sop_plus_1_matches_annual_projection() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            MonthlyTimelineRow sop1 = findTimelineRow(rows, "SOP+1", 0);
+            assertThat(sop1.prices().get(0)).isCloseTo(bd("14.9005"), within(TOLERANCE));
+            assertThat(sop1.event()).contains("Productivité");
+            assertThat(sop1.rowClass()).contains("prod-row");
+        }
+
+        @Test
+        @DisplayName("SOP+7: tombée des rondelles, prix = SOP+6 - R&D")
+        void sop_plus_7_tombee() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            MonthlyTimelineRow sop7 = findTimelineRow(rows, "SOP+7", 0);
+            assertThat(sop7.prices().get(0)).isCloseTo(bd("10.0062"), within(TOLERANCE));
+            assertThat(sop7.event()).contains("Tombée");
+            assertThat(sop7.rowClass()).contains("drop-row");
+        }
+
+        @Test
+        @DisplayName("Colonne naive: productivité appliquée sur totalité du prix")
+        void naive_column_productivity_on_full_price() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+
+            // SOP: naive = regular (no productivity applied yet)
+            MonthlyTimelineRow sop = findTimelineRow(rows, "SOP", 0);
+            assertThat(sop.naivePrices()).isNotNull();
+            assertThat(sop.naivePrices().get(0)).isEqualByComparingTo(bd("15.004"));
+
+            // SOP+1 naive: 15.004 * (1 + -0.01) = 15.004 * 0.99 = 14.85396
+            MonthlyTimelineRow sop1 = findTimelineRow(rows, "SOP+1", 0);
+            assertThat(sop1.naivePrices().get(0)).isCloseTo(bd("14.85396"), within(TOLERANCE));
+
+            // Regular SOP+1: 14.9005 (more expensive because R&D+pkg excluded from productivity)
+            assertThat(sop1.prices().get(0)).isCloseTo(bd("14.9005"), within(TOLERANCE));
+
+            // Naive < regular because naive applies productivity on the full price
+            assertThat(sop1.naivePrices().get(0)).isLessThan(sop1.prices().get(0));
+        }
+
+        @Test
+        @DisplayName("Colonne naive cumulative: SOP+4 naive diverge significativement")
+        void naive_column_cumulative_divergence() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            MonthlyTimelineRow sop4 = findTimelineRow(rows, "SOP+4", 0);
+
+            // Naive SOP+4: 15.004 * 0.99^4 = 15.004 * 0.96059601 ≈ 14.4126
+            assertThat(sop4.naivePrices().get(0)).isCloseTo(bd("14.4126"), within(bd("0.001")));
+            // Regular SOP+4: 14.5962
+            assertThat(sop4.prices().get(0)).isCloseTo(bd("14.5962"), within(TOLERANCE));
+        }
+
+        @Test
+        @DisplayName("Les mois Jan-Déc d'une année ont les mêmes prix")
+        void months_within_year_have_same_prices() {
+            List<MonthlyTimelineRow> rows = buildTimeline();
+            // SOP+1: summary at index 13, months at 14-25
+            MonthlyTimelineRow jan = rows.get(14);
+            assertThat(jan.label()).isEqualTo("Jan");
+            assertThat(jan.month()).isEqualTo(1);
+            assertThat(jan.event()).contains("Productivité");
+
+            MonthlyTimelineRow dec = rows.get(25);
+            assertThat(dec.label()).isEqualTo("Déc");
+            assertThat(dec.month()).isEqualTo(12);
+            assertThat(dec.event()).isEmpty();
+
+            // Same prices
+            assertThat(jan.prices().get(0)).isEqualByComparingTo(dec.prices().get(0));
+        }
+
+        private List<MonthlyTimelineRow> buildTimeline() {
+            return FamilyService.buildMonthlyTimeline(rds, pkgs, sopUpdated, 2014, rate, prodYears, rdDropYear);
+        }
+    }
+
+    @Nested
+    @DisplayName("Timeline Mensuelle — PF4 style (0%/0 ans, tombée SOP+5)")
+    class TimelinePF4 {
+
+        @Test
+        @DisplayName("Pas de colonne naive quand productivityRate = 0")
+        void no_naive_column_when_no_productivity() {
+            List<MonthlyTimelineRow> rows = FamilyService.buildMonthlyTimeline(
+                    List.of(bd("2")), List.of(bd("0.5")), List.of(bd("18")),
+                    2014, bd("0"), 0, 5);
+
+            for (MonthlyTimelineRow row : rows) {
+                assertThat(row.naivePrices()).isNull();
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Timeline Mensuelle — PF3 style (tombée pendant productivité)")
+    class TimelinePF3 {
+
+        @Test
+        @DisplayName("SOP+3 tombée + productivité, naive aussi")
+        void tombee_during_productivity() {
+            List<MonthlyTimelineRow> rows = FamilyService.buildMonthlyTimeline(
+                    List.of(bd("3")), List.of(bd("0.1")), List.of(bd("20")),
+                    2014, bd("-0.02"), 5, 3);
+
+            MonthlyTimelineRow sop3 = findTimelineRow(rows, "SOP+3", 0);
+            // Regular: same as annual projection test
+            assertThat(sop3.prices().get(0)).isCloseTo(bd("16.006145"), within(TOLERANCE));
+            assertThat(sop3.event()).contains("Tombée").contains("Productivité");
+
+            // Naive SOP+3:
+            // SOP+1 naive: 20 * 0.98 = 19.6
+            // SOP+2 naive: 19.6 * 0.98 = 19.208
+            // SOP+3 tombée: 19.208 - 3 = 16.208
+            // SOP+3 prod naive: 16.208 * 0.98 = 15.88384
+            assertThat(sop3.naivePrices().get(0)).isCloseTo(bd("15.88384"), within(TOLERANCE));
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
@@ -335,6 +504,13 @@ class FamilyServiceProjectionTest {
                 .filter(r -> label.equals(r.label()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Row not found: " + label));
+    }
+
+    private static MonthlyTimelineRow findTimelineRow(List<MonthlyTimelineRow> rows, String label, int month) {
+        return rows.stream()
+                .filter(r -> label.equals(r.label()) && r.month() == month)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Timeline row not found: " + label + " month=" + month));
     }
 
     private static BigDecimal bd(String val) {

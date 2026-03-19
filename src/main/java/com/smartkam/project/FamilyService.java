@@ -151,6 +151,11 @@ class FamilyService {
                 real.sopUpdated, sopYear,
                 family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
 
+        // Section ⑤ — Monthly Timeline
+        List<MonthlyTimelineRow> monthlyTimeline = buildMonthlyTimeline(real.updatedRds, real.updatedPkgs,
+                real.sopUpdated, sopYear,
+                family.getProductivityRate(), family.getProductivityYears(), family.getRdDropYear());
+
         // What-if simulation
         Long actualSimId = null;
         List<BigDecimal> simSopUpdated = null;
@@ -179,7 +184,7 @@ class FamilyService {
         return new FamilyView(family, family.getProject(), refs,
                 sopInitials, sheetRows,
                 real.updatedBases, real.updatedRds, real.sopUpdated, deltas,
-                projection,
+                projection, monthlyTimeline,
                 actualSimId, simSopUpdated, simDeltas, simProjection);
     }
 
@@ -234,6 +239,93 @@ class FamilyService {
 
     private record UpdatedPrices(List<BigDecimal> updatedBases, List<BigDecimal> updatedRds,
                                   List<BigDecimal> updatedPkgs, List<BigDecimal> sopUpdated) {}
+
+    private static final String[] MONTH_NAMES = {
+            "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
+            "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"
+    };
+
+    // package-private for testability
+    static List<MonthlyTimelineRow> buildMonthlyTimeline(List<BigDecimal> updatedRds,
+                                                          List<BigDecimal> pkgs,
+                                                          List<BigDecimal> sopUpdated,
+                                                          int sopYear,
+                                                          BigDecimal productivityRate,
+                                                          int productivityYears,
+                                                          int rdDropYear) {
+        List<MonthlyTimelineRow> rows = new ArrayList<>();
+        int lastYear = Math.max(productivityYears, rdDropYear) + 1;
+
+        List<BigDecimal> current = new ArrayList<>(sopUpdated);
+        List<BigDecimal> currentRds = new ArrayList<>(updatedRds);
+
+        // Naive simulation: productivity applied on full price (for comparison)
+        boolean hasNaive = productivityRate.signum() != 0;
+        List<BigDecimal> naive = hasNaive ? new ArrayList<>(sopUpdated) : null;
+        List<BigDecimal> naiveRds = hasNaive ? new ArrayList<>(updatedRds) : null;
+
+        for (int y = 0; y <= lastYear; y++) {
+            int yr = sopYear + y;
+            String yearLabel = y == 0 ? "SOP" : "SOP+" + y;
+            String event = "";
+            String cls = "";
+
+            if (y == 0) {
+                event = "Mise à jour F4 validées";
+            } else {
+                // Tombée des rondelles — applied first
+                boolean tombee = (y == rdDropYear);
+                if (tombee) {
+                    for (int i = 0; i < current.size(); i++) {
+                        current.set(i, PricingEngine.applyTombeeDesRondelles(current.get(i), currentRds.get(i)));
+                        currentRds.set(i, BigDecimal.ZERO);
+                    }
+                    if (hasNaive) {
+                        for (int i = 0; i < naive.size(); i++) {
+                            naive.set(i, naive.get(i).subtract(naiveRds.get(i)));
+                            naiveRds.set(i, BigDecimal.ZERO);
+                        }
+                    }
+                    event = "Tombée des rondelles R&D";
+                    cls = "drop-row";
+                }
+
+                // Productivity
+                boolean prod = (y <= productivityYears && productivityRate.signum() != 0);
+                if (prod) {
+                    for (int i = 0; i < current.size(); i++) {
+                        current.set(i, PricingEngine.applyProductivity(
+                                current.get(i), currentRds.get(i), pkgs.get(i), productivityRate));
+                        // Naive: rate on full price
+                        naive.set(i, naive.get(i).multiply(BigDecimal.ONE.add(productivityRate)));
+                    }
+                    String prodLabel = "Productivité " +
+                            productivityRate.multiply(BigDecimal.valueOf(100)).toPlainString() + "%/an";
+                    if (tombee) {
+                        event += " + " + prodLabel;
+                    } else {
+                        event = prodLabel;
+                        cls = "prod-row";
+                    }
+                }
+            }
+
+            List<BigDecimal> naiveForRow = hasNaive ? List.copyOf(naive) : null;
+
+            // Annual summary row
+            rows.add(new MonthlyTimelineRow(yearLabel, yr, 0, event,
+                    List.copyOf(current), naiveForRow, "timeline-year" + (cls.isEmpty() ? "" : " " + cls)));
+
+            // 12 monthly rows (Jan carries the event, Feb-Dec are empty)
+            for (int m = 1; m <= 12; m++) {
+                rows.add(new MonthlyTimelineRow(MONTH_NAMES[m - 1], yr, m,
+                        m == 1 ? event : "",
+                        List.copyOf(current), naiveForRow, "timeline-month"));
+            }
+        }
+
+        return rows;
+    }
 
     // package-private for testability
     static List<ProjectionRow> buildProjection(List<BigDecimal> updatedRds,

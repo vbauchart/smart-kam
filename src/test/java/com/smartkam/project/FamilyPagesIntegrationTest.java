@@ -343,6 +343,40 @@ class FamilyPagesIntegrationTest {
     }
 
     // -------------------------------------------------------------------------
+    // Section ⑤ — Timeline Mensuelle
+    // -------------------------------------------------------------------------
+
+    @Test
+    @Order(45)
+    @DisplayName("GET — section ⑤ affiche la timeline mensuelle avec les années")
+    void family_detail_section5_shows_monthly_timeline() {
+        ResponseEntity<String> response = http.getForEntity("/projects/1/families/1", String.class);
+        String body = response.getBody();
+
+        // Section ⑤ header
+        assertThat(body).contains("Timeline Mensuelle");
+        // Year labels from timeline
+        assertThat(body).contains("SOP+1").contains("SOP+4").contains("SOP+7");
+        // Monthly rows (hidden by default, but present in HTML)
+        assertThat(body).contains("timeline-month");
+        assertThat(body).contains("Jan").contains("Fév").contains("Déc");
+        // Events
+        assertThat(body).contains("F4 validées");
+    }
+
+    @Test
+    @Order(46)
+    @DisplayName("GET — section ⑤ affiche la colonne simulation naïve")
+    void family_detail_section5_shows_naive_simulation_column() {
+        ResponseEntity<String> response = http.getForEntity("/projects/1/families/1", String.class);
+        String body = response.getBody();
+
+        // Naive simulation column header
+        assertThat(body).contains("Simu prod.");
+        assertThat(body).contains("totalité");
+    }
+
+    // -------------------------------------------------------------------------
     // Cross-family matrix — sheet from another family
     // -------------------------------------------------------------------------
 
