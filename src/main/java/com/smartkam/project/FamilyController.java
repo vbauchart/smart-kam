@@ -70,7 +70,7 @@ class FamilyController {
                         @RequestParam("status") ModificationStatus status,
                         Model model) {
         model.addAttribute("view", familyService.updateSheetStatus(projectId, familyId, sheetId, status));
-        return "families/_recalc-fragment :: recalc";
+        return "families/detail";
     }
 
     @PostMapping("/sheets/{sheetId}/references/{refId}/applies")

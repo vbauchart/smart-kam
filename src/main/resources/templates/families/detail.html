@@ -53,9 +53,7 @@
 
     <!-- Info banner -->
     <div class="info-banner">
-        Cellules jaunes = éditables — cliquez pour modifier.
-        Changez un statut de fiche ou cochez la matrice pour recalcul instantané (sections ③④).
-        Les colonnes par référence défilent horizontalement.
+        Les cellules jaunes sont éditables. Modifiez un prix, un statut de fiche ou la matrice d'application pour un recalcul instantané.
     </div>
 
     <!-- Scrollable sheet -->
@@ -116,21 +114,28 @@
                     <td class="stick-c"></td>
                     <th:block th:each="ref : ${view.refs}">
                         <td class="col-ref num editable"
-                            x-data="{ editing: false }"
-                            @click="editing = true; $nextTick(() => $refs.inp.select())">
-                            <span x-show="!editing"
+                            x-data="{ editing: false, display: '' }"
+                            x-init="display = $refs.val.textContent"
+                            @click="if(!editing){ editing = true; $nextTick(() => $refs.inp.select()); }">
+                            <span x-ref="val" x-show="!editing" x-text="display"
                                   th:text="${#numbers.formatDecimal(ref.priceBreakdown.basePrice, 1, 'NONE', 3, 'POINT')}">—</span>
-                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
-                                   name="base_price"
-                                   th:value="${ref.priceBreakdown.basePrice}"
-                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/base(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
-                                   hx-trigger="blur"
-                                   hx-include="this"
-                                   hx-target="#sections-computed"
-                                   hx-swap="outerHTML"
-                                   @keydown.enter.prevent="$el.blur()"
-                                   @keydown.escape.prevent="editing = false"
-                                   style="width:72px;">
+                            <span x-show="editing" class="edit-group">
+                                <input x-ref="inp" type="number" step="0.01"
+                                       name="base_price"
+                                       th:value="${ref.priceBreakdown.basePrice}"
+                                       th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/base(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                       hx-trigger="confirm"
+                                       hx-include="this"
+                                       hx-target="#sections-computed"
+                                       hx-swap="outerHTML"
+                                       @keydown.enter.prevent="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))"
+                                       @keydown.escape.prevent="$refs.inp.value = $refs.inp.defaultValue; editing = false"
+                                       style="width:62px;">
+                                <button type="button" class="edit-btn edit-btn--ok" title="Valider"
+                                        @click.stop="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))">&#10003;</button>
+                                <button type="button" class="edit-btn edit-btn--cancel" title="Annuler"
+                                        @click.stop="$refs.inp.value = $refs.inp.defaultValue; editing = false">&#10005;</button>
+                            </span>
                         </td>
                     </th:block>
                     <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
@@ -143,21 +148,28 @@
                     <td class="stick-c"></td>
                     <th:block th:each="ref : ${view.refs}">
                         <td class="col-ref num editable"
-                            x-data="{ editing: false }"
-                            @click="editing = true; $nextTick(() => $refs.inp.select())">
-                            <span x-show="!editing"
+                            x-data="{ editing: false, display: '' }"
+                            x-init="display = $refs.val.textContent"
+                            @click="if(!editing){ editing = true; $nextTick(() => $refs.inp.select()); }">
+                            <span x-ref="val" x-show="!editing" x-text="display"
                                   th:text="${#numbers.formatDecimal(ref.priceBreakdown.rdAmortization, 1, 'NONE', 3, 'POINT')}">—</span>
-                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
-                                   name="rd_value"
-                                   th:value="${ref.priceBreakdown.rdAmortization}"
-                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/rd(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
-                                   hx-trigger="blur"
-                                   hx-include="this"
-                                   hx-target="#sections-computed"
-                                   hx-swap="outerHTML"
-                                   @keydown.enter.prevent="$el.blur()"
-                                   @keydown.escape.prevent="editing = false"
-                                   style="width:72px;">
+                            <span x-show="editing" class="edit-group">
+                                <input x-ref="inp" type="number" step="0.01"
+                                       name="rd_value"
+                                       th:value="${ref.priceBreakdown.rdAmortization}"
+                                       th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/rd(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                       hx-trigger="confirm"
+                                       hx-include="this"
+                                       hx-target="#sections-computed"
+                                       hx-swap="outerHTML"
+                                       @keydown.enter.prevent="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))"
+                                       @keydown.escape.prevent="$refs.inp.value = $refs.inp.defaultValue; editing = false"
+                                       style="width:62px;">
+                                <button type="button" class="edit-btn edit-btn--ok" title="Valider"
+                                        @click.stop="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))">&#10003;</button>
+                                <button type="button" class="edit-btn edit-btn--cancel" title="Annuler"
+                                        @click.stop="$refs.inp.value = $refs.inp.defaultValue; editing = false">&#10005;</button>
+                            </span>
                         </td>
                     </th:block>
                     <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
@@ -170,21 +182,28 @@
                     <td class="stick-c"></td>
                     <th:block th:each="ref : ${view.refs}">
                         <td class="col-ref num editable"
-                            x-data="{ editing: false }"
-                            @click="editing = true; $nextTick(() => $refs.inp.select())">
-                            <span x-show="!editing"
+                            x-data="{ editing: false, display: '' }"
+                            x-init="display = $refs.val.textContent"
+                            @click="if(!editing){ editing = true; $nextTick(() => $refs.inp.select()); }">
+                            <span x-ref="val" x-show="!editing" x-text="display"
                                   th:text="${#numbers.formatDecimal(ref.priceBreakdown.packaging, 1, 'NONE', 3, 'POINT')}">—</span>
-                            <input x-show="editing" x-ref="inp" type="number" step="0.01"
-                                   name="pkg_value"
-                                   th:value="${ref.priceBreakdown.packaging}"
-                                   th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/pkg(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
-                                   hx-trigger="blur"
-                                   hx-include="this"
-                                   hx-target="#sections-computed"
-                                   hx-swap="outerHTML"
-                                   @keydown.enter.prevent="$el.blur()"
-                                   @keydown.escape.prevent="editing = false"
-                                   style="width:72px;">
+                            <span x-show="editing" class="edit-group">
+                                <input x-ref="inp" type="number" step="0.01"
+                                       name="pkg_value"
+                                       th:value="${ref.priceBreakdown.packaging}"
+                                       th:attr="hx-post=@{/projects/{p}/families/{f}/references/{r}/pkg(p=${view.project.id},f=${view.family.id},r=${ref.id})}"
+                                       hx-trigger="confirm"
+                                       hx-include="this"
+                                       hx-target="#sections-computed"
+                                       hx-swap="outerHTML"
+                                       @keydown.enter.prevent="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))"
+                                       @keydown.escape.prevent="$refs.inp.value = $refs.inp.defaultValue; editing = false"
+                                       style="width:62px;">
+                                <button type="button" class="edit-btn edit-btn--ok" title="Valider"
+                                        @click.stop="display = parseFloat($refs.inp.value).toFixed(3); editing = false; $refs.inp.dispatchEvent(new Event('confirm'))">&#10003;</button>
+                                <button type="button" class="edit-btn edit-btn--cancel" title="Annuler"
+                                        @click.stop="$refs.inp.value = $refs.inp.defaultValue; editing = false">&#10005;</button>
+                            </span>
                         </td>
                     </th:block>
                     <td class="stick-i"></td><td class="stick-j"></td><td class="stick-k"></td>
@@ -245,7 +264,8 @@
                                     th:attr="hx-post=@{/projects/{p}/families/{f}/sheets/{s}/status(p=${view.project.id},f=${view.family.id},s=${sr.sheet.id})}"
                                     hx-trigger="change"
                                     hx-include="this"
-                                    hx-target="#sections-computed"
+                                    hx-target="main"
+                                    hx-select="main"
                                     hx-swap="outerHTML">
                                 <option value="OPEN"
                                         th:selected="${sr.sheet.status.name() == 'OPEN'}">Open</option>
@@ -312,12 +332,17 @@
         </table>
     </div>
 
-    <div class="info-banner mt-0 mb-3"
+    <div style="display:flex;gap:24px;padding:12px 28px;background:var(--surface);border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary);"
          th:with="pctRate=${view.family.productivityRate.multiply(new java.math.BigDecimal('100'))}">
-        <strong>Règle 3 :</strong> Productivité
-        <span th:text="${pctRate.toPlainString() + ' %'}"></span>
-        / an × <span th:text="${view.family.productivityYears}"></span> ans &nbsp;·&nbsp;
-        <strong>Règle 4 :</strong> Tombée des rondelles R&amp;D à SOP+<span th:text="${view.family.rdDropYear}"></span>
+        <span>
+            <span style="font-weight:700;color:var(--sec-proj);">Productivité</span>
+            <span th:text="${pctRate.toPlainString() + ' %'}"></span> / an
+            &times; <span th:text="${view.family.productivityYears}"></span> ans
+        </span>
+        <span>
+            <span style="font-weight:700;color:#dc2626;">Tombée R&amp;D</span>
+            SOP+<span th:text="${view.family.rdDropYear}"></span>
+        </span>
     </div>
 
 </main>

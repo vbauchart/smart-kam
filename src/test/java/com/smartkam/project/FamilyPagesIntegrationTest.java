@@ -254,7 +254,7 @@ class FamilyPagesIntegrationTest {
 
     @Test
     @Order(30)
-    @DisplayName("POST sheet status → recalc fragment retourné")
+    @DisplayName("POST sheet status → page complète retournée (section ② actualisée)")
     void post_sheet_status_returns_recalc_fragment() {
         ResponseEntity<String> response = postForm(
                 "/projects/1/families/1/sheets/8/status",
@@ -263,7 +263,7 @@ class FamilyPagesIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody())
                 .contains("sections-computed")
-                .doesNotContain("<!DOCTYPE");
+                .contains("st-validated");
     }
 
     @Test
