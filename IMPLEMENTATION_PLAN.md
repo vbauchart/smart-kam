@@ -63,7 +63,7 @@ Structure de prix complète avec traçabilité et calculs automatiques.
 - [x] Productivité contractuelle : application automatique des baisses annuelles (ex : -1%/an x 5 ans)
 - [ ] **Price Walk** : décomposition visuelle du prix, du contrat initial au prix courant
 - [x] Comparaison vs LOI : écart automatique entre prix SOP actualisé et prix LOI initial
-- [ ] **Mode "What-if"** : simulation de l'impact d'une fiche Open sans valider, vue côte-à-côte
+- [x] **Mode "What-if"** : simulation de l'impact d'une fiche Open sans valider, vue côte-à-côte
 - [ ] **Snapshots versionnés** : photo des prix à chaque PCICN envoyé, comparaison diff entre deux snapshots
 
 ### Module 3 - Fiches de Modification (F4/PCICN)
@@ -383,7 +383,7 @@ Implémentation de la **Règle 2 — Matrice d'Application & Recalcul**.
 
 Implémentation de la **Règle 3 — Productivité Contractuelle**.
 
-- [ ] Entité `Productivity` : taux (ex : -1%, -2%), durée (nb années), date de début
+- [x] ~~Entité `Productivity`~~ → Paramètres par famille (`productivity_rate`, `productivity_years`, `rd_drop_year`) sur `ProductFamily` (migration V5)
 - [x] **Moteur de productivité** : `(prix - amort - packaging) × (1 + taux) + amort + packaging`
 - [x] La productivité ne s'applique **que sur le prix pièce nu**, pas sur les rondelles ni le packaging
 - [x] **Projection annuelle** : tableau SOP, SOP+1, SOP+2... montrant les prix futurs par référence
@@ -397,10 +397,10 @@ Implémentation de la **Règle 3 — Productivité Contractuelle**.
 - [ ] **Timeline mensuelle** : navigation mois par mois avec les modifications appliquées à chaque date
 - [ ] Possibilité d'insérer une modification de prix à une date précise (ex : "MAJ matières en mars 2015")
 - [ ] Colonne de simulation : comparaison productivité appliquée sur totalité du prix vs sur prix nu uniquement
-- [ ] **Mode "What-if" (simulation)** : le KAM peut tester l'impact d'une modification avant de la valider
-  - [ ] Bouton "Simuler" sur une fiche `Open` : affiche les prix recalculés en surbrillance sans toucher aux prix réels
-  - [ ] Comparaison côte-à-côte : prix actuels vs prix si la fiche était validée
-  - [ ] Annulation de la simulation sans aucun effet sur les données
+- [x] **Mode "What-if" (simulation)** : le KAM peut tester l'impact d'une modification avant de la valider
+  - [x] Bouton "Simuler" sur une fiche `Open` : affiche les prix recalculés en surbrillance sans toucher aux prix réels
+  - [x] Comparaison côte-à-côte : prix actuels vs prix si la fiche était validée
+  - [x] Annulation de la simulation sans aucun effet sur les données
 
 > **Livrable visuel** : On paramètre "-1%/an pendant 4 ans", et le tableau projette les prix sur toute la durée. On voit la différence entre l'application correcte (sur prix nu) et la simulation naïve (sur tout le prix). On simule l'impact d'une fiche Open avant de la valider.
 
