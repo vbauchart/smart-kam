@@ -52,6 +52,38 @@
     </div>
 </nav>
 
+<!--
+  Sidebar fragment — tree navigation: projects > families.
+  Shows all projects. If a project is active (activeProjectId matches),
+  its families are expanded below it.
+  Uses model attributes injected by SidebarAdvice.
+-->
+<aside th:fragment="sidebar" class="app-sidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Navigation</span>
+    </div>
+    <nav class="sidebar-nav">
+        <th:block th:each="proj : ${sidebarProjects}">
+            <!-- Project link -->
+            <a th:href="@{/projects/{id}(id=${proj.get('id')})}"
+               class="sidebar-link sidebar-link--project"
+               th:classappend="${proj.get('id') == activeProjectId} ? ' active' : ''">
+                <span class="sidebar-project-name" th:text="${proj.get('name')}">Projet</span>
+            </a>
+            <!-- Families (only if this project is the active one) -->
+            <th:block th:if="${proj.get('id') == activeProjectId}">
+                <a th:each="fam : ${sidebarFamilies}"
+                   th:href="@{/projects/{p}/families/{f}(p=${proj.get('id')},f=${fam.get('id')})}"
+                   class="sidebar-link sidebar-link--family"
+                   th:classappend="${fam.get('id') == activeFamilyId} ? ' active' : ''">
+                    <span class="sidebar-code" th:text="${fam.get('code')}">PF1</span>
+                    <span class="sidebar-desig" th:text="${fam.get('designation')}">Désignation</span>
+                </a>
+            </th:block>
+        </th:block>
+    </nav>
+</aside>
+
 <div th:fragment="scripts">
     <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
 </div>

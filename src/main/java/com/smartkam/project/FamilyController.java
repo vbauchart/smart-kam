@@ -5,18 +5,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Controller
 @RequestMapping("/projects/{projectId}/families/{familyId}")
 class FamilyController {
 
     private final FamilyService familyService;
-    private final ProductFamilyRepository familyRepository;
 
-    FamilyController(FamilyService familyService, ProductFamilyRepository familyRepository) {
+    FamilyController(FamilyService familyService) {
         this.familyService = familyService;
-        this.familyRepository = familyRepository;
     }
 
     // -------------------------------------------------------------------------
@@ -29,7 +26,6 @@ class FamilyController {
                   @RequestParam(value = "simulate", required = false) Long simulateSheetId,
                   Model model) {
         model.addAttribute("view", familyService.getView(projectId, familyId, simulateSheetId));
-        addSiblings(projectId, model);
         return "families/detail";
     }
 
@@ -74,7 +70,6 @@ class FamilyController {
                         @RequestParam("status") ModificationStatus status,
                         Model model) {
         model.addAttribute("view", familyService.updateSheetStatus(projectId, familyId, sheetId, status));
-        addSiblings(projectId, model);
         return "families/detail";
     }
 
@@ -87,15 +82,5 @@ class FamilyController {
                          Model model) {
         model.addAttribute("view", familyService.updateMatrixApplies(projectId, familyId, sheetId, refId, applies));
         return "families/_recalc-fragment :: recalc";
-    }
-
-    /** Adds lightweight sibling-family list for the sidebar navigation. */
-    private void addSiblings(Long projectId, Model model) {
-        record FamilySummary(Long id, String code, String designation) {}
-        List<FamilySummary> siblings = familyRepository.findSummariesByProjectId(projectId)
-                .stream()
-                .map(row -> new FamilySummary((Long) row[0], (String) row[1], (String) row[2]))
-                .toList();
-        model.addAttribute("siblings", siblings);
     }
 }

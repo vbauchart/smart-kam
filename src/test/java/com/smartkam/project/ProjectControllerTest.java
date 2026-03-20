@@ -39,6 +39,7 @@ class ProjectControllerTest {
 
     @MockBean ProjectService               projectService;
     @MockBean ProductReferenceRepository   referenceRepository;
+    @MockBean org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     // Shared fixtures, rebuilt before each test
     private Project          myProject;
@@ -48,6 +49,10 @@ class ProjectControllerTest {
 
     @BeforeEach
     void setUp() {
+        // SidebarAdvice uses JdbcTemplate — return empty lists for @WebMvcTest
+        when(jdbcTemplate.queryForList(any(String.class))).thenReturn(List.of());
+        when(jdbcTemplate.queryForList(any(String.class), any(Object.class))).thenReturn(List.of());
+
         myProject = ProjectServiceTest.project(1L, "MyProject", ProjectStatus.PRODUCTION);
         ReflectionTestUtils.setField(myProject, "sopDate", LocalDate.of(2014, 1, 1));
 

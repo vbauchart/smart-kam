@@ -7,7 +7,11 @@
     <li class="list-crumbs"><span class="crumb-current">Projets</span></li>
 </nav>
 
-<main class="container-fluid" style="max-width:1440px;padding:0 32px;">
+<main class="app-with-sidebar">
+
+    <th:block th:replace="~{layout :: sidebar}"></th:block>
+
+    <div class="app-content">
 
     <!-- Dark header bar -->
     <div class="page-header d-flex align-items-center gap-3 px-4 py-3" style="border-radius:var(--radius);margin-top:20px;">
@@ -77,6 +81,7 @@
 
     </div>
 
+    </div><!-- /app-content -->
 </main>
 
 <th:block th:replace="~{layout :: scripts}"></th:block>

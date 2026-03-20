@@ -8,7 +8,11 @@
     <li class="proj-crumbs"><span class="crumb-current" th:text="${project.name}">Projet</span></li>
 </nav>
 
-<main class="container-fluid" style="max-width:1440px;padding:0 32px;">
+<main class="app-with-sidebar">
+
+    <th:block th:replace="~{layout :: sidebar}"></th:block>
+
+    <div class="app-content">
 
     <!-- Page header -->
     <div class="page-header d-flex align-items-center gap-3 px-4 py-3" style="border-radius:var(--radius);margin-top:20px;">
@@ -85,6 +89,7 @@
         Ces projections sont visibles dans la page de détail de chaque famille.
     </div>
 
+    </div><!-- /app-content -->
 </main>
 
 <th:block th:replace="~{layout :: scripts}"></th:block>

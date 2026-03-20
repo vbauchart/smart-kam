@@ -9,27 +9,11 @@
     <li class="family-crumbs"><span class="crumb-current" th:text="${view.family.code}">PF1</span></li>
 </nav>
 
-<main class="family-layout">
+<main class="app-with-sidebar">
 
-    <!-- ===== Left sidebar — family navigation ===== -->
-    <aside class="family-sidebar">
-        <div class="sidebar-header">
-            <a th:href="@{/projects/{id}(id=${view.project.id})}" class="sidebar-back">&larr; Projet</a>
-            <div class="sidebar-title" th:text="${view.project.name}">Projet</div>
-        </div>
-        <nav class="sidebar-nav">
-            <a th:each="sib : ${siblings}"
-               th:href="@{/projects/{p}/families/{f}(p=${view.project.id},f=${sib.id})}"
-               class="sidebar-link"
-               th:classappend="${sib.id == view.family.id} ? ' active' : ''">
-                <span class="sidebar-code" th:text="${sib.code}">PF1</span>
-                <span class="sidebar-desig" th:text="${sib.designation}">Désignation</span>
-            </a>
-        </nav>
-    </aside>
+    <th:block th:replace="~{layout :: sidebar}"></th:block>
 
-    <!-- ===== Right content ===== -->
-    <div class="family-content">
+    <div class="app-content">
 
     <!-- Page header -->
     <div class="page-header d-flex align-items-center gap-3 px-4 py-3" style="border-radius:var(--radius);">
@@ -354,7 +338,7 @@
         </span>
     </div>
 
-    </div><!-- /family-content -->
+    </div><!-- /app-content -->
 
 </main>
 
