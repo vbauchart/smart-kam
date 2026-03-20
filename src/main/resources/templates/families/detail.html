@@ -3,7 +3,11 @@
 <head th:replace="~{layout :: head(${view.family.code + ' — ' + view.project.name})}"></head>
 <body>
 
-<nav th:replace="~{layout :: navbar}"></nav>
+<nav th:replace="~{layout :: navbar(~{:: .family-crumbs})}">
+    <li class="family-crumbs"><a th:href="@{/projects}">Projets</a></li>
+    <li class="family-crumbs"><a th:href="@{/projects/{id}(id=${view.project.id})}" th:text="${view.project.name}">Projet</a></li>
+    <li class="family-crumbs"><span class="crumb-current" th:text="${view.family.code}">PF1</span></li>
+</nav>
 
 <main class="family-layout">
 
@@ -27,28 +31,13 @@
     <!-- ===== Right content ===== -->
     <div class="family-content">
 
-    <!-- Dark header bar -->
+    <!-- Page header -->
     <div class="page-header d-flex align-items-center gap-3 px-4 py-3" style="border-radius:var(--radius);">
         <div class="flex-grow-1">
-            <nav aria-label="breadcrumb" class="mb-1">
-                <ol class="breadcrumb mb-0" style="font-size:11px;">
-                    <li class="breadcrumb-item">
-                        <a th:href="@{/projects}" class="text-white-50 text-decoration-none">Projets</a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a th:href="@{/projects/{id}(id=${view.project.id})}"
-                           class="text-white-50 text-decoration-none"
-                           th:text="${view.project.name}">Projet</a>
-                    </li>
-                    <li class="breadcrumb-item active text-white"
-                        th:text="${view.family.code + ' — ' + view.family.designation}">Famille</li>
-                </ol>
-            </nav>
             <h1 class="h5 fw-bold text-white mb-0"
                 th:text="${view.family.code + ' — ' + view.family.designation}">Famille</h1>
         </div>
         <div class="d-flex align-items-center gap-3" style="font-size:11px;color:rgba(255,255,255,.7);">
-            <span>Projet : <strong class="text-white" th:text="${view.project.name}"></strong></span>
             <span th:if="${view.project.sopDate != null}">
                 SOP : <strong class="text-white"
                               th:text="${#temporals.format(view.project.sopDate, 'MMM yyyy')}"></strong>

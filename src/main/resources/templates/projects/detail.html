@@ -3,21 +3,16 @@
 <head th:replace="~{layout :: head(${project.name})}"></head>
 <body>
 
-<nav th:replace="~{layout :: navbar}"></nav>
+<nav th:replace="~{layout :: navbar(~{:: .proj-crumbs})}">
+    <li class="proj-crumbs"><a th:href="@{/projects}">Projets</a></li>
+    <li class="proj-crumbs"><span class="crumb-current" th:text="${project.name}">Projet</span></li>
+</nav>
 
 <main class="container-fluid" style="max-width:1440px;padding:0 32px;">
 
-    <!-- Dark header bar (same pattern as families/detail.html) -->
+    <!-- Page header -->
     <div class="page-header d-flex align-items-center gap-3 px-4 py-3" style="border-radius:var(--radius);margin-top:20px;">
         <div class="flex-grow-1">
-            <nav aria-label="breadcrumb" class="mb-1">
-                <ol class="breadcrumb mb-0" style="font-size:11px;">
-                    <li class="breadcrumb-item">
-                        <a th:href="@{/projects}" class="text-white-50 text-decoration-none">Projets</a>
-                    </li>
-                    <li class="breadcrumb-item active text-white" th:text="${project.name}">Projet</li>
-                </ol>
-            </nav>
             <h1 class="h5 fw-bold text-white mb-0" th:text="${project.name}">Projet</h1>
             <p class="small mb-0" style="color:rgba(255,255,255,.55);"
                th:if="${project.description != null}" th:text="${project.description}"></p>

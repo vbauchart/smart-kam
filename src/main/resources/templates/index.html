@@ -3,7 +3,9 @@
 <head th:replace="~{layout :: head('Accueil')}"></head>
 <body>
 
-<nav th:replace="~{layout :: navbar}"></nav>
+<nav th:replace="~{layout :: navbar(~{:: .home-crumbs})}">
+    <li class="home-crumbs"><span class="crumb-current">Accueil</span></li>
+</nav>
 
 <main class="container-fluid" style="max-width:1440px;padding:0 32px;">
 

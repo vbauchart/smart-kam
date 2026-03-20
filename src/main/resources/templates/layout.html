@@ -20,22 +20,34 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
 </head>
 
-<nav th:fragment="navbar" class="navbar navbar-expand-lg sticky-top app-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand" th:href="@{/}">
-            <span class="brand-mark">SK</span>
-            <span class="brand-text">Smart KAM</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-4">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/projects}">Projets</a>
-                </li>
-            </ul>
+<!--
+  Navbar fragment — accepts a "breadcrumb" block parameter.
+  Usage:  <nav th:replace="~{layout :: navbar(~{:: .my-crumbs})}">
+  The block should contain <li> elements for the breadcrumb.
+  If no block is provided, defaults to "Smart KAM".
+-->
+<nav th:fragment="navbar(crumbs)" class="app-navbar sticky-top">
+    <div class="navbar-inner">
+        <!-- Left: logo + breadcrumb -->
+        <div class="navbar-left">
+            <a class="navbar-logo" th:href="@{/}">
+                <span class="brand-mark">SK</span>
+            </a>
+            <ol class="navbar-crumbs">
+                <th:block th:replace="${crumbs} ?: ~{}">
+                    <li><a th:href="@{/}">Smart KAM</a></li>
+                </th:block>
+            </ol>
+        </div>
+        <!-- Right: search + user -->
+        <div class="navbar-right">
+            <button class="search-btn" title="Recherche rapide">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span class="search-shortcut">Ctrl K</span>
+            </button>
+            <button class="user-btn" title="Compte">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
         </div>
     </div>
 </nav>
