@@ -1,0 +1,10 @@
+target/
+.git/
+.idea/
+*.iml
+.claude/
+.serena/
+node_modules/
+tmp/
+*.md
+docker-compose.yml

@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16
     container_name: smartkam-db
     environment:
       POSTGRES_DB: smartkam
@@ -24,6 +24,22 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    build: .
+    container_name: smartkam-app
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: smartkam
+      DB_USER: smartkam
+      DB_PASSWORD: smartkam
+    ports:
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
