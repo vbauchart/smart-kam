@@ -63,15 +63,15 @@
 
                     <!-- Family separator row -->
                     <tr class="section-row sec-initial">
-                        <td style="border-left:4px solid var(--sec-initial);">
-                            <a th:href="@{/projects/{p}/families/{f}(p=${project.id},f=${family.id})}"
-                               class="text-decoration-none fw-bold"
-                               style="color:var(--sec-initial);"
-                               th:text="${family.code}">PF1</a>
-                        </td>
+                        <td style="border-left:4px solid var(--sec-initial);font-weight:700;"
+                            th:text="${family.code}">PF1</td>
                         <td></td>
-                        <td colspan="5" style="font-weight:400;"
-                            th:text="${family.designation}">Désignation</td>
+                        <td colspan="5" style="font-weight:400;">
+                            <a th:href="@{/projects/{p}/families/{f}(p=${project.id},f=${family.id})}"
+                               class="text-decoration-none"
+                               style="color:var(--text-primary);"
+                               th:text="${family.designation}">Désignation</a>
+                        </td>
                     </tr>
 
                     <!-- Reference rows -->
