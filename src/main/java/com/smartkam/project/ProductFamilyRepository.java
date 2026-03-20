@@ -26,4 +26,7 @@ interface ProductFamilyRepository extends JpaRepository<ProductFamily, Long> {
             ORDER BY pf.code
             """)
     List<ProductFamily> findByProjectIdWithDetails(@Param("projectId") Long projectId);
+
+    @Query("SELECT pf.id, pf.code, pf.designation FROM ProductFamily pf WHERE pf.project.id = :projectId ORDER BY pf.code")
+    List<Object[]> findSummariesByProjectId(@Param("projectId") Long projectId);
 }
